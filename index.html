@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EarnTrack Pro - Triple Shift Engine</title>
+    <title>EarnTrack Sandbox - Multi-Shift Tester</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -12,7 +12,7 @@
             --text-color: #ffffff;
             --accent-color: #64ffda;
             --muted-text: #8892b0;
-            --error-color: #ff5555;
+            --sandbox-color: #ffaa00;
         }
 
         body {
@@ -22,8 +22,6 @@
             margin: 0;
             padding: 16px;
             box-sizing: border-box;
-            -webkit-user-select: none;
-            user-select: none;
         }
 
         .app-container { max-width: 480px; margin: 0 auto; }
@@ -31,105 +29,74 @@
         .screen.active { display: block; }
         
         h2 { font-size: 24px; margin-bottom: 8px; background: linear-gradient(45deg, #ffffff, var(--accent-color)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        p.subtitle { color: var(--muted-text); font-size: 14px; margin-top: 0; margin-bottom: 24px; }
-
-        .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; font-size: 12px; color: var(--muted-text); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
-        .input-field { width: 100%; background-color: var(--card-color); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 14px; border-radius: 12px; font-size: 16px; box-sizing: border-box; outline: none; }
         
-        .radio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .radio-btn { background-color: var(--card-color); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 14px; border-radius: 12px; text-align: center; font-size: 16px; cursor: pointer; font-weight: 600; }
-        .radio-btn.selected { border-color: var(--accent-color); background-color: rgba(100, 255, 218, 0.1); color: var(--accent-color); }
-
-        /* Dashboard Module Layouts */
+        /* Sandbox Dashboard Styling */
+        .sandbox-panel { background: rgba(255, 170, 0, 0.07); border: 1px dashed var(--sandbox-color); border-radius: 12px; padding: 14px; margin-bottom: 16px; }
+        .sandbox-title { font-size: 11px; color: var(--sandbox-color); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px; }
+        
         .booster-card { background-color: var(--card-color); border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(100, 255, 218, 0.05); }
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
         .stat-label { font-size: 11px; color: var(--muted-text); text-transform: uppercase; letter-spacing: 0.5px; }
         .stat-value { font-size: 22px; font-weight: 700; margin-top: 4px; }
         
         .progress-bar { background-color: rgba(255, 255, 255, 0.1); height: 10px; border-radius: 5px; overflow: hidden; margin-top: 6px; }
-        .progress-fill { background: linear-gradient(90deg, #4dadf7, var(--accent-color)); height: 100%; width: 0%; transition: width 0.8s ease-in-out; }
+        .progress-fill { background: linear-gradient(90deg, #4dadf7, var(--accent-color)); height: 100%; width: 0%; transition: width 0.4s ease; }
 
-        /* Triple Shift Timings Panel Matrix */
         .shift-log-panel { background-color: var(--card-color); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
-        .shift-row { border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 14px; margin-bottom: 14px; }
-        .shift-row:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+        .shift-row { border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; margin-bottom: 12px; }
         .time-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 4px; }
         
-        .time-box-field { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; padding: 10px; font-size: 14px; outline: none; text-align: center; width: 100%; box-sizing: border-box; }
-        .time-box-field:focus { border-color: var(--accent-color); }
-
-        .btn-action { background-color: var(--accent-color); color: #0a192f; border: none; width: 100%; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; }
-        .btn-action:disabled { background-color: rgba(255,255,255,0.05); color: var(--muted-text); cursor: not-allowed; }
+        .time-box-field, .date-input-field { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; padding: 10px; font-size: 14px; outline: none; text-align: center; width: 100%; box-sizing: border-box; }
         
-        .locked-message { color: var(--error-color); font-size: 13px; margin-top: 10px; display: none; font-weight: 600; text-align: center; }
+        .btn-action { background-color: var(--accent-color); color: #0a192f; border: none; width: 100%; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-bottom: 10px; }
+        .btn-secondary { background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white; width: 100%; padding: 14px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
         .holiday-toggle { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; font-size: 14px; color: var(--muted-text); }
-        .reset-link { display: block; text-align: center; font-size: 11px; color: var(--muted-text); margin-top: 16px; text-decoration: underline; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="app-container">
-        <div id="screen-loading" class="screen active" style="text-align: center; padding-top: 50px;">
-            <h2>Connecting...</h2>
-            <p style="color: var(--muted-text)">Syncing triple-shift real-time architecture</p>
-        </div>
-
-        <div id="screen-onboarding" class="screen">
-            <h2>Welcome to EarnTrack</h2>
-            <p class="subtitle">Set up your base parameters to deploy your real-time moral tracker engine.</p>
-
-            <div class="input-group">
-                <label>Weekly Working Hour Limit</label>
-                <div class="radio-grid">
-                    <div class="radio-btn selected" id="opt-20" onclick="setWeeklyLimit(20)">20 Hours</div>
-                    <div class="radio-btn" id="opt-40" onclick="setWeeklyLimit(40)">40 Hours</div>
+        <div id="screen-dashboard" class="screen active">
+            
+            <div class="sandbox-panel">
+                <span class="sandbox-title">🛠️ UNLOCKED TESTING TOOLKIT</span>
+                <div style="display: grid; grid-template-columns: 1fr; gap: 8px;">
+                    <div>
+                        <span style="font-size: 11px; color: var(--muted-text); display:block; margin-bottom:4px;">Set Custom Target Simulation Date:</span>
+                        <input type="date" id="sandbox-date" class="date-input-field" value="2026-05-01">
+                    </div>
                 </div>
             </div>
 
-            <div class="input-group">
-                <label>Hourly Wage Rate (£ / hr)</label>
-                <input type="number" id="input-rate" class="input-field" value="11.44" step="0.01">
-            </div>
-
-            <div class="input-group">
-                <label>Monthly Financial Target (GBP)</label>
-                <input type="number" id="input-target" class="input-field" value="1500">
-            </div>
-
-            <button class="btn-action" onclick="saveConfiguration()">Generate My Dashboard</button>
-        </div>
-
-        <div id="screen-dashboard" class="screen">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2>EarnTrack Engine</h2>
+                <h2>EarnTrack Sim</h2>
                 <span id="user-display" style="font-size: 12px; color: var(--accent-color);">@Username</span>
             </div>
 
             <div class="booster-card">
                 <div class="stats-grid">
                     <div class="stat-box">
-                        <span class="stat-label">Monthly Gross Income</span>
+                        <span class="stat-label">Total Cumulative Balance</span>
                         <div class="stat-value" id="dash-total-earned">£0.00</div>
                     </div>
                     <div class="stat-box">
-                        <span class="stat-label">This Week's Log</span>
-                        <div class="stat-value" id="dash-weekly-hours">0.0h</div>
+                        <span class="stat-label">Active Wage Rate</span>
+                        <div class="stat-value">£11.44/hr</div>
                     </div>
                 </div>
                 <div class="progress-container">
-                    <div class="progress-header">
-                        <span>Monthly Target Horizon</span>
+                    <div class="progress-header" style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted-text); margin-bottom:4px;">
+                        <span>Progress Metric</span>
                         <span id="dash-progress-text">£0 / £1500</span>
                     </div>
                     <div class="progress-bar"><div class="progress-fill" id="dash-progress-fill"></div></div>
                 </div>
             </div>
 
-            <div class="shift-log-panel" id="log-interface-box">
+            <div class="shift-log-panel">
                 <div class="holiday-toggle">
-                    <span>Is Today a Rest Day / Holiday?</span>
-                    <input type="checkbox" id="holiday-checkbox" onchange="toggleHolidayMode(this.checked)" style="width:20px; height:20px; accent-color:var(--accent-color);">
+                    <span>Mark Selected Date as Holiday</span>
+                    <input type="checkbox" id="holiday-checkbox" onchange="toggleHolidayMode(this.checked)" style="width:20px; height:20px;">
                 </div>
 
                 <div id="time-picker-inputs-wrapper">
@@ -140,7 +107,6 @@
                             <div><input type="time" id="day-end" class="time-box-field" value="14:45"></div>
                         </div>
                     </div>
-
                     <div class="shift-row">
                         <span class="stat-label" style="color:#4dadf7;">🌙 Evening Shift Window</span>
                         <div class="time-inputs">
@@ -148,7 +114,6 @@
                             <div><input type="time" id="eve-end" class="time-box-field"></div>
                         </div>
                     </div>
-
                     <div class="shift-row">
                         <span class="stat-label" style="color:#a371f7;">🌌 Night Shift Window</span>
                         <div class="time-inputs">
@@ -158,10 +123,14 @@
                     </div>
                 </div>
 
-                <button class="btn-action" style="margin-top:16px;" id="submit-btn" onclick="calculateAndPostShifts()">Log Shifts & Sync Data</button>
-                <div class="locked-message" id="lock-msg">⚠️ Daily metrics submitted. Log locked until tomorrow!</div>
+                <button class="btn-action" style="margin-top:16px;" onclick="calculateAndPostShifts()">Log Selected Date Shift</button>
             </div>
-            <span class="reset-link" onclick="resetApp()">Change Core Setup Config</span>
+
+            <div class="shift-log-panel" style="text-align: center;">
+                <span class="stat-label" style="display:block; margin-bottom:12px;">📤 Transmit Visual Statements into Telegram</span>
+                <button class="btn-secondary" style="border-color:#4dadf7; color:#4dadf7;" onclick="triggerChatReport('weekly')">📋 Send Weekly Structured Report</button>
+                <button class="btn-secondary" style="border-color:var(--accent-color); color:var(--accent-color);" onclick="triggerChatReport('monthly')">📊 Send Monthly Structured Report</button>
+            </div>
         </div>
     </div>
 
@@ -170,53 +139,19 @@
         tg.expand();
 
         const telegramUser = tg.initDataUnsafe?.user;
-        const telegramId = telegramUser ? telegramUser.id.toString() : "DEV_USER";
-        const username = telegramUser ? (telegramUser.username || telegramUser.first_name) : "Developer";
+        const telegramId = telegramUser ? telegramUser.id.toString() : "TEST_SUITE_USER";
+        const username = telegramUser ? (telegramUser.username || telegramUser.first_name) : "Tester";
         
         const BACKEND_API_URL = "https://earntrack-backend.onrender.com/api"; 
-        let appConfig = { weeklyLimit: 40, hourlyRate: 11.44, monthlyTarget: 1500 };
+        const HOURLY_RATE = 11.44;
+        const TARGET = 1500;
 
         window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('user-display').innerText = `@${username}`;
-            const localSaved = localStorage.getItem('earntrack_v3_setup');
-            if (localSaved) {
-                appConfig = JSON.parse(localSaved);
-                fetchRealtimeData();
-            } else {
-                showScreen('screen-onboarding');
-            }
+            fetchRealtimeData();
         });
 
-        function showScreen(screenId) {
-            document.getElementById('screen-loading').classList.remove('active');
-            document.getElementById('screen-onboarding').classList.remove('active');
-            document.getElementById('screen-dashboard').classList.remove('active');
-            document.getElementById(screenId).classList.add('active');
-        }
-
-        function setWeeklyLimit(hours) {
-            appConfig.weeklyLimit = hours;
-            document.getElementById('opt-20').classList.toggle('selected', hours === 20);
-            document.getElementById('opt-40').classList.toggle('selected', hours === 40);
-        }
-
-        function saveConfiguration() {
-            const rate = parseFloat(document.getElementById('input-rate').value);
-            const target = parseFloat(document.getElementById('input-target').value);
-
-            if (isNaN(rate) || rate <= 0 || isNaN(target) || target <= 0) {
-                alert("Please provide proper configuration variables.");
-                return;
-            }
-
-            appConfig.hourlyRate = rate;
-            appConfig.monthlyTarget = target;
-            localStorage.setItem('earntrack_v3_setup', JSON.stringify(appConfig));
-            fetchRealtimeData();
-        }
-
         function toggleHolidayMode(isHoliday) {
-            document.getElementById('time-picker-inputs-wrapper').style.opacity = isHoliday ? "0.2" : "1.0";
             document.querySelectorAll('.time-box-field').forEach(input => input.disabled = isHoliday);
         }
 
@@ -224,41 +159,25 @@
             if(!startTimeStr || !endTimeStr) return 0;
             const [sHrs, sMins] = startTimeStr.split(':').map(Number);
             const [eHrs, eMins] = endTimeStr.split(':').map(Number);
-            
             let diffMins = (eHrs * 60 + eMins) - (sHrs * 60 + sMins);
-            if (diffMins < 0) diffMins += 24 * 60; // Crosses midnight calculation handling
-            
+            if (diffMins < 0) diffMins += 24 * 60;
             return diffMins / 60;
         }
 
         async function fetchRealtimeData() {
             try {
-                const response = await fetch(`${BACKEND_API_URL}/user-data?telegram_id=${telegramId}&hourly_rate=${appConfig.hourlyRate}`);
+                const response = await fetch(`${BACKEND_API_URL}/user-data?telegram_id=${telegramId}&hourly_rate=${HOURLY_RATE}`);
                 const data = await response.json();
 
                 document.getElementById('dash-total-earned').innerText = '£' + data.monthlyCumulativeEarnings.toFixed(2);
-                document.getElementById('dash-weekly-hours').innerText = `${data.weeklyTotalHours.toFixed(2)}h / ${appConfig.weeklyLimit}h`;
-                
-                const progressPercent = Math.min(100, (data.monthlyCumulativeEarnings / appConfig.monthlyTarget) * 100);
+                const progressPercent = Math.min(100, (data.monthlyCumulativeEarnings / TARGET) * 100);
                 document.getElementById('dash-progress-fill').style.width = progressPercent + '%';
-                document.getElementById('dash-progress-text').innerText = `£${data.monthlyCumulativeEarnings.toFixed(0)} / £${appConfig.monthlyTarget}`;
-
-                const todayString = new Date().toISOString().split('T')[0];
-                const todayIsAlreadyLogged = data.weekShifts.some(shift => shift.date === todayString);
-
-                if (todayIsAlreadyLogged) {
-                    document.getElementById('holiday-checkbox').disabled = true;
-                    document.getElementById('submit-btn').disabled = true;
-                    document.getElementById('lock-msg').style.display = 'block';
-                }
-
-                showScreen('screen-dashboard');
-            } catch (err) {
-                showScreen('screen-dashboard');
-            }
+                document.getElementById('dash-progress-text').innerText = `£${data.monthlyCumulativeEarnings.toFixed(0)} / £${TARGET}`;
+            } catch (err) { console.error(err); }
         }
 
         async function calculateAndPostShifts() {
+            const targetDate = document.getElementById('sandbox-date').value;
             let dayHours = 0, eveHours = 0, nightHours = 0;
             const isHoliday = document.getElementById('holiday-checkbox').checked;
 
@@ -270,7 +189,7 @@
 
             const payload = {
                 telegram_id: telegramId,
-                date: new Date().toISOString().split('T')[0],
+                date: targetDate, // Uses custom simulated date input from tester panel
                 day_hours: dayHours,
                 evening_hours: eveHours,
                 night_hours: nightHours,
@@ -287,17 +206,29 @@
                 if (response.ok) {
                     if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
                     fetchRealtimeData();
+                    
+                    // Increment date forward automatically by 1 day to speed up user testing lifecycle
+                    let d = new Date(targetDate);
+                    d.setDate(d.getDate() + 1);
+                    document.getElementById('sandbox-date').value = d.toISOString().split('T')[0];
                 }
-            } catch (err) {
-                tg.showAlert("API operational synchronization failure.");
-            }
+            } catch (err) { tg.showAlert("API Error"); }
         }
 
-        function resetApp() {
-            if(confirm("Wipe configuration metadata state?")) {
-                localStorage.clear();
-                location.reload();
-            }
+        // 📤 SENDS MESSAGE STRUCTURING INSTRUCTIONS TO THE BOT CHAT WINDOW
+        async function triggerChatReport(type) {
+            try {
+                const response = await fetch(`${BACKEND_API_URL}/trigger-bot-report`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ telegram_id: telegramId, report_type: type, username: username })
+                });
+                
+                if (response.ok) {
+                    tg.showPopup({ title: "Report Sent! 🚀", message: `Check your main EarnTrack Bot chat screen. The formatted text sheet has been pushed.`, buttons: [{type: 'ok'}] });
+                    tg.close(); // Closes the webapp window smoothly so they see the conversation
+                }
+            } catch (err) { tg.showAlert("Failed to route message transmission."); }
         }
     </script>
 </body>
