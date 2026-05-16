@@ -1,1 +1,274 @@
-<h1>Welcome to EarnTrack Mini App</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EarnTrack - AI Wage Tracker</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-color: #0a192f;
+            --card-color: #112240;
+            --text-color: #ffffff;
+            --accent-color: #64ffda;
+            --muted-text: #8892b0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 16px;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* App Container */
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        /* Header Layout */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 0;
+            background: linear-gradient(45deg, #ffffff, var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Hero Moral Booster Card */
+        .booster-card {
+            background-color: var(--card-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box text {
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--muted-text);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 26px;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin-top: 12px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--muted-text);
+            margin-bottom: 6px;
+        }
+
+        .progress-bar {
+            background-color: rgba(255, 255, 255, 0.1);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #4dadf7, var(--accent-color));
+            height: 100%;
+            width: 75%; /* Dynamic later */
+            transition: width 1s ease-in-out;
+            border-radius: 4px;
+        }
+
+        /* Motivation Notification Box */
+        .alert-box {
+            background: rgba(100, 255, 218, 0.06);
+            border-left: 4px solid var(--accent-color);
+            padding: 12px;
+            border-radius: 0 8px 8px 0;
+            font-size: 13px;
+            line-height: 1.4;
+            color: #e6f1ff;
+        }
+
+        /* Interactive Logger Section */
+        .log-section {
+            background-color: var(--card-color);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .log-section h3 {
+            margin: 0 0 16px 0;
+            font-size: 16px;
+            color: #e6f1ff;
+        }
+
+        .counter-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 20px;
+        }
+
+        .btn-counter {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .btn-counter:active {
+            transform: scale(0.9);
+            background-color: rgba(100, 255, 218, 0.2);
+            border-color: var(--accent-color);
+        }
+
+        #hours-display {
+            font-size: 36px;
+            font-weight: 700;
+            min-width: 80px;
+        }
+
+        /* Submit Button */
+        .btn-submit {
+            background-color: var(--accent-color);
+            color: #0a192f;
+            border: none;
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-submit:active {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="header">
+            <h1>EarnTrack</h1>
+            <span style="font-size: 12px; color: var(--accent-color); background: rgba(100,255,218,0.1); padding: 4px 8px; border-radius: 20px;">UK Shift Mode</span>
+        </div>
+
+        <div class="booster-card">
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <span class="stat-label">Earned Today</span>
+                    <div class="stat-value" id="today-cash">£0.00</div>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Weekly Hours</span>
+                    <div class="stat-value" id="weekly-hours">12.5 / 20h</div>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-header">
+                    <span>Monthly Progress</span>
+                    <span id="progress-text">£750 / £1,000</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill-bar"></div>
+                </div>
+            </div>
+            
+            <br>
+            <div class="alert-box" id="ai-message">
+                You are hitting your stride! 🎉 If you hit your financial target in the next 3.5 hours, the remaining hours this week are <strong>pure bonus cash</strong>!
+            </div>
+        </div>
+
+        <div class="log-section">
+            <h3>Log Finished Shift Hours</h3>
+            <div class="counter-container">
+                <button class="btn-counter" onclick="adjustHours(-0.5)">-</button>
+                <div id="hours-display">7.5</div>
+                <button class="btn-counter" onclick="adjustHours(0.5)">+</button>
+            </div>
+            <button class="btn-submit" onclick="submitShift()">Confirm & Log Shift</button>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Telegram WebApp SDK
+        const tg = window.Telegram.WebApp;
+        tg.expand(); // Forces the app to open in full view inside Telegram
+
+        let currentHours = 7.5;
+        const hourlyRate = 11.44; // Standard UK National Living Wage example
+
+        function adjustHours(amount) {
+            currentHours = Math.max(0, currentHours + amount);
+            document.getElementById('hours-display').innerText = currentHours.toFixed(1);
+            
+            // Real-time tracking math update to boost morale instantly
+            let projectedEarnings = currentHours * hourlyRate;
+            document.getElementById('today-cash').innerText = '£' + projectedEarnings.toFixed(2);
+        }
+
+        function submitShift() {
+            // Show a quick native Telegram confirmation haptic/alert feedback
+            tg.HapticFeedback.notificationOccurred('success');
+            
+            tg.showPopup({
+                title: 'Shift Logged!',
+                message: `Successfully logged ${currentHours} hours. You earned £${(currentHours * hourlyRate).toFixed(2)} toward your goal!`,
+                buttons: [{type: 'ok'}]
+            });
+            
+            // Here, you would make your fetch() POST call to your backend to save the data
+            console.log("Sending shift data to backend...");
+        }
+
+        // Initialize display on load
+        adjustHours(0);
+    </script>
+</body>
+</html>
