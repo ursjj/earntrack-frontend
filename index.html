@@ -33,16 +33,15 @@
         h2 { font-size: 24px; margin-bottom: 8px; background: linear-gradient(45deg, #ffffff, var(--accent-color)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         p.subtitle { color: var(--muted-text); font-size: 14px; margin-top: 0; margin-bottom: 24px; }
 
-        /* Onboarding Styles */
-        .input-group { margin-bottom: 24px; }
+        .input-group { margin-bottom: 20px; }
         .input-group label { display: block; font-size: 13px; color: var(--muted-text); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
-        .input-field { width: 100%; background-color: var(--card-color); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 14px; border-radius: 12px; font-size: 16px; box-sizing: border-box; outline: none; }
-        .input-field:focus { border-color: var(--accent-color); }
+        .input-field, .dropdown-field { width: 100%; background-color: var(--card-color); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 14px; border-radius: 12px; font-size: 16px; box-sizing: border-box; outline: none; }
+        .input-field:focus, .dropdown-field:focus { border-color: var(--accent-color); }
+        
         .radio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .radio-btn { background-color: var(--card-color); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 14px; border-radius: 12px; text-align: center; font-size: 16px; cursor: pointer; font-weight: 600; }
         .radio-btn.selected { border-color: var(--accent-color); background-color: rgba(100, 255, 218, 0.1); color: var(--accent-color); }
 
-        /* Dashboard Elements */
         .booster-card { background-color: var(--card-color); border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(100, 255, 218, 0.05); }
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
         .stat-label { font-size: 11px; color: var(--muted-text); text-transform: uppercase; letter-spacing: 0.5px; }
@@ -51,7 +50,6 @@
         .progress-bar { background-color: rgba(255, 255, 255, 0.1); height: 10px; border-radius: 5px; overflow: hidden; margin-top: 6px; }
         .progress-fill { background: linear-gradient(90deg, #4dadf7, var(--accent-color)); height: 100%; width: 0%; transition: width 0.8s ease-in-out; }
 
-        /* Calendar Styling */
         .calendar-card { background-color: var(--card-color); border-radius: 16px; padding: 16px; margin-bottom: 20px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; margin-top: 10px; }
         .calendar-day-label { font-size: 11px; color: var(--muted-text); font-weight: 600; }
@@ -59,17 +57,12 @@
         .calendar-day.today { border-color: #4dadf7; color: #4dadf7; }
         .calendar-day.worked { background: rgba(100, 255, 218, 0.15); border-color: var(--accent-color); color: var(--accent-color); }
 
-        /* Controls */
-        .log-panel { background-color: var(--card-color); border-radius: 16px; padding: 20px; text-align: center; }
-        .hours-display { font-size: 44px; font-weight: 800; color: var(--accent-color); margin: 8px 0; }
-        .modern-slider { -webkit-appearance: none; width: 100%; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.1); outline: none; margin: 20px 0; }
-        .modern-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: var(--accent-color); cursor: pointer; }
-        .modern-slider:disabled::-webkit-slider-thumb { background: var(--muted-text); cursor: not-allowed; }
+        .log-panel { background-color: var(--card-color); border-radius: 16px; padding: 20px; text-align: left; }
+        .time-select-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
 
-        .btn-action { background-color: var(--accent-color); color: #0a192f; border: none; width: 100%; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; }
+        .btn-action { background-color: var(--accent-color); color: #0a192f; border: none; width: 100%; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; }
         .btn-action:disabled { background-color: rgba(255,255,255,0.05); color: var(--muted-text); cursor: not-allowed; }
         
-        .locked-message { color: var(--error-color); font-size: 13px; margin-top: 10px; display: none; font-weight: 600; }
         .reset-link { display: block; text-align: center; font-size: 11px; color: var(--muted-text); margin-top: 16px; text-decoration: underline; cursor: pointer; }
     </style>
 </head>
@@ -124,7 +117,7 @@
                     </div>
                 </div>
                 <div class="progress-container">
-                    <div class="progress-header">
+                    <div class="progress-header" style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
                         <span>Progress Toward Monthly Target</span>
                         <span id="dash-progress-text">£0 / £1500</span>
                     </div>
@@ -147,13 +140,29 @@
             </div>
 
             <div class="log-panel">
-                <span class="stat-label" id="slider-instruction">Slide to log shift duration (0 = Holiday)</span>
-                <div class="hours-display"><span id="slider-val">7.5</span><span style="font-size:20px; font-weight:500; color:var(--muted-text);"> hrs</span></div>
+                <span class="stat-label" style="display:block; margin-bottom: 12px;">Log Shift Segment</span>
                 
-                <input type="range" min="0" max="16" step="0.5" value="7.5" class="modern-slider" id="hour-slider" oninput="document.getElementById('slider-val').innerText=parseFloat(this.value).toFixed(1)">
+                <div class="input-group">
+                    <label>Shift Category</label>
+                    <select id="shift-type" class="dropdown-field">
+                        <option value="Day Shift">☀️ Day Shift</option>
+                        <option value="Evening Shift">🌆 Evening Shift</option>
+                        <option value="Night Shift">🌙 Night Shift</option>
+                    </select>
+                </div>
+
+                <label style="display: block; font-size: 13px; color: var(--muted-text); text-transform: uppercase; margin-bottom: 8px;">Duration</label>
+                <div class="time-select-row">
+                    <select id="shift-hours" class="dropdown-field"></select>
+                    <select id="shift-minutes" class="dropdown-field">
+                        <option value="0">00 mins</option>
+                        <option value="15">15 mins</option>
+                        <option value="30">30 mins</option>
+                        <option value="45">45 mins</option>
+                    </select>
+                </div>
                 
-                <button class="btn-action" id="submit-btn" onclick="logShiftRealtime()">Confirm Day's Shift</button>
-                <div class="locked-message" id="lock-msg">⚠️ Window locked. Shift or Holiday already logged for today!</div>
+                <button class="btn-action" id="submit-btn" onclick="logShiftRealtime()">Confirm Shift Block</button>
             </div>
 
             <span class="reset-link" onclick="resetApp()">Wipe Local Config Data</span>
@@ -164,7 +173,6 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Extract native verification parameters from Telegram profile matrix
         const telegramUser = tg.initDataUnsafe?.user;
         const telegramId = telegramUser ? telegramUser.id.toString() : "DEV_MOCK_USER";
         const username = telegramUser ? (telegramUser.username || telegramUser.first_name) : "Developer";
@@ -177,9 +185,9 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('user-display').innerText = `@${username}`;
+            populateHoursDropdown();
             highlightTodayInCalendar();
             
-            // Check if user has basic settings configured locally first
             const localSaved = localStorage.getItem('earntrack_local_setup');
             if (localSaved) {
                 appConfig = JSON.parse(localSaved);
@@ -188,6 +196,17 @@
                 showScreen('screen-onboarding');
             }
         });
+
+        function populateHoursDropdown() {
+            const hrSelect = document.getElementById('shift-hours');
+            for(let i = 0; i <= 16; i++) {
+                let opt = document.createElement('option');
+                opt.value = i;
+                opt.innerText = i + " hrs";
+                if(i === 7) opt.selected = true;
+                hrSelect.appendChild(opt);
+            }
+        }
 
         function showScreen(screenId) {
             document.getElementById('screen-loading').classList.remove('active');
@@ -211,7 +230,7 @@
             const targetInput = parseFloat(document.getElementById('input-target').value);
 
             if (isNaN(rateInput) || rateInput <= 0 || isNaN(targetInput) || targetInput <= 0) {
-                alert("Please verification settings input rules.");
+                alert("Please complete setup config elements cleanly.");
                 return;
             }
 
@@ -233,45 +252,32 @@
                 document.getElementById('dash-progress-fill').style.width = progressPercent + '%';
                 document.getElementById('dash-progress-text').innerText = `£${data.monthlyCumulativeEarnings.toFixed(0)} / £${appConfig.monthlyTarget}`;
 
-                // Clear layout tracking classes and parse verified history maps
                 for(let i=0; i<7; i++) document.getElementById(`day-${i}`).classList.remove('worked');
                 
-                let todayIsAlreadyLogged = false;
-                const todayString = new Date().toISOString().split('T')[0];
-
                 data.weekShifts.forEach(shift => {
                     const dayIdx = new Date(shift.date).getDay();
                     document.getElementById(`day-${dayIdx}`).classList.add('worked');
-                    if(shift.date === todayString) {
-                        todayIsAlreadyLogged = true;
-                    }
                 });
 
-                if (todayIsAlreadyLogged) {
-                    lockLoggingInterface();
-                }
-
+                // Note: Lock constraint bypass loop logic skipped here per instructions to keep input continuous.
                 showScreen('screen-dashboard');
             } catch (err) {
-                console.error("API Error connecting to database context container.", err);
-                showScreen('screen-dashboard'); // Fallback loop bypass
+                console.error("API connection error downlinks.", err);
+                showScreen('screen-dashboard');
             }
         }
 
-        function lockLoggingInterface() {
-            document.getElementById('hour-slider').disabled = true;
-            document.getElementById('submit-btn').disabled = true;
-            document.getElementById('lock-msg').style.display = 'block';
-            document.getElementById('slider-instruction').innerText = "Daily Logging Concluded";
-        }
-
         async function logShiftRealtime() {
-            const hours = parseFloat(document.getElementById('hour-slider').value);
-            if (isNaN(hours) || hours < 0) return; // FIXED: Accepts 0 hours cleanly as Holiday input now
+            const hrs = parseInt(document.getElementById('shift-hours').value);
+            const mins = parseInt(document.getElementById('shift-minutes').value);
+            const shiftType = document.getElementById('shift-type').value;
+            
+            const totalHoursFraction = hrs + (mins / 60);
 
             const payload = {
                 telegram_id: telegramId,
-                hours: hours,
+                hours: totalHoursFraction,
+                shift_type: shiftType,
                 date: new Date().toISOString().split('T')[0]
             };
 
@@ -284,19 +290,18 @@
 
                 if (response.ok) {
                     if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-                    lockLoggingInterface();
                     fetchRealtimeData();
                 } else {
                     const errData = await response.json();
-                    tg.showAlert(errData.detail || "Transaction blocked by API constraint guards.");
+                    tg.showAlert(errData.detail || "Transaction issue.");
                 }
             } catch (err) {
-                tg.showAlert("API Connection Error execution fault.");
+                tg.showAlert("API connection execution error.");
             }
         }
 
         function resetApp() {
-            if(confirm("Wipe setup profiles configuration state logs? This breaks database tracking connections link.")) {
+            if(confirm("Wipe setup profiles data logs?")) {
                 localStorage.clear();
                 location.reload();
             }
