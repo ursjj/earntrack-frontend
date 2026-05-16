@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EarnTrack - Fixed Cycle Engine</title>
+    <title>EarnTrack - Lab SandBox</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -36,7 +36,6 @@
         .input-group { margin-bottom: 20px; }
         .input-group label { display: block; font-size: 13px; color: var(--muted-text); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
         .input-field { width: 100%; background-color: var(--card-color); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 14px; border-radius: 12px; font-size: 16px; box-sizing: border-box; outline: none; }
-        .input-field:focus { border-color: var(--accent-color); }
         
         .radio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .radio-btn { background-color: var(--card-color); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 14px; border-radius: 12px; text-align: center; font-size: 16px; cursor: pointer; font-weight: 600; }
@@ -69,13 +68,13 @@
 
     <div class="app-container">
         <div id="screen-loading" class="screen active" style="text-align: center; padding-top: 50px;">
-            <h2>Authenticating Tracker...</h2>
-            <p style="color: var(--muted-text)">Securing interface links with database layers.</p>
+            <h2>Sandbox Profiler Running...</h2>
+            <p style="color: var(--muted-text)">Continuous back-to-back testing active.</p>
         </div>
 
         <div id="screen-onboarding" class="screen">
             <h2>Welcome to EarnTrack</h2>
-            <p class="subtitle">Configure your tracking profiles parameters below.</p>
+            <p class="subtitle">Configure parameters below.</p>
             
             <div class="input-group">
                 <label>Weekly Working Hour Target</label>
@@ -100,7 +99,7 @@
 
         <div id="screen-dashboard" class="screen">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2>EarnTrack Live</h2>
+                <h2>EarnTrack Lab</h2>
                 <span id="user-display" style="font-size: 12px; color: var(--accent-color);">@Username</span>
             </div>
 
@@ -125,7 +124,7 @@
             </div>
 
             <div class="calendar-card">
-                <span class="stat-label">Current Billing Cycle Ledger (Mon - Sun)</span>
+                <span class="stat-label">Fixed Target Time Horizon Horizon Ledger</span>
                 <div class="calendar-grid">
                     <div class="calendar-day-label">Mon</div><div class="calendar-day-label">Tue</div><div class="calendar-day-label">Wed</div><div class="calendar-day-label">Thu</div><div class="calendar-day-label">Fri</div><div class="calendar-day-label">Sat</div><div class="calendar-day-label">Sun</div>
                     <div class="calendar-day" id="day-1">M</div>
@@ -139,7 +138,7 @@
             </div>
 
             <div class="log-panel">
-                <span class="stat-label" style="display:block; margin-bottom: 16px; font-weight: bold;">Log Today's Entry</span>
+                <span class="stat-label" style="display:block; margin-bottom: 16px; font-weight: bold;">Log Test Entry</span>
                 
                 <div class="shift-entry-row" style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 10px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05);">
                     <label style="display: flex; align-items: center; font-size: 14px; font-weight: 600; color: var(--accent-color); margin-bottom: 8px; cursor: pointer;">
@@ -194,7 +193,6 @@
         const username = telegramUser ? (telegramUser.username || telegramUser.first_name) : "Joseph";
         
         const BACKEND_API_URL = "https://earntrack-backend.onrender.com/api"; 
-
         let appConfig = { weeklyLimit: 40, hourlyRate: 11.44, monthlyTarget: 1500 };
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -223,16 +221,8 @@
         }
 
         function saveConfiguration() {
-            const rateInput = parseFloat(document.getElementById('input-rate').value);
-            const targetInput = parseFloat(document.getElementById('input-target').value);
-
-            if (isNaN(rateInput) || rateInput <= 0 || isNaN(targetInput) || targetInput <= 0) {
-                alert("Please verify parameter values.");
-                return;
-            }
-
-            appConfig.hourlyRate = rateInput;
-            appConfig.monthlyTarget = targetInput;
+            appConfig.hourlyRate = parseFloat(document.getElementById('input-rate').value);
+            appConfig.monthlyTarget = parseFloat(document.getElementById('input-target').value);
             localStorage.setItem('earntrack_local_setup', JSON.stringify(appConfig));
             fetchRealtimeData();
         }
@@ -249,20 +239,14 @@
                 document.getElementById('dash-progress-fill').style.width = progressPercent + '%';
                 document.getElementById('dash-progress-text').innerText = `£${data.monthlyCumulativeEarnings.toFixed(0)} / £${appConfig.monthlyTarget}`;
 
-                // Clean visual states
-                for(let i=0; i<7; i++) {
-                    const dayCard = document.getElementById(`day-${i}`);
-                    dayCard.classList.remove('worked', 'holiday');
-                }
+                for(let i=0; i<7; i++) document.getElementById(`day-${i}`).classList.remove('worked', 'holiday');
                 
-                // Static structural painting based on active transaction tags
                 data.weekShifts.forEach(shift => {
                     const dayIdx = new Date(shift.date).getDay();
-                    const targetCard = document.getElementById(`day-${dayIdx}`);
-                    if (shift.shift_type === "HOLIDAY") {
-                        targetCard.classList.add('holiday');
-                    } else if(shift.hours > 0) {
-                        targetCard.classList.add('worked');
+                    const card = document.getElementById(`day-${dayIdx}`);
+                    if (card) {
+                        if (shift.shift_type === "HOLIDAY") card.classList.add('holiday');
+                        else if(shift.hours > 0) card.classList.add('worked');
                     }
                 });
 
@@ -276,76 +260,61 @@
             if (!startTimeStr || !endTimeStr) return 0;
             const [startHours, startMins] = startTimeStr.split(':').map(Number);
             let [endHours, endMins] = endTimeStr.split(':').map(Number);
-            
-            if (endHours < startHours || (endHours === startHours && endMins < startMins)) {
-                endHours += 24; 
-            }
+            if (endHours < startHours || (endHours === startHours && endMins < startMins)) endHours += 24; 
             return (((endHours * 60) + endMins) - ((startHours * 60) + startMins)) / 60;
         }
 
         async function logShiftRealtime() {
             const payloadBatch = [];
             const todayDate = new Date().toISOString().split('T')[0];
+            let totalAddedHours = 0;
 
             if (document.getElementById('check-day').checked) {
-                const computed = calculateHoursBetween(document.getElementById('day-start').value, document.getElementById('day-end').value);
-                if (computed > 0) payloadBatch.push({ telegram_id: telegramId, hours: computed, shift_type: "Day Shift", date: todayDate });
+                const h = calculateHoursBetween(document.getElementById('day-start').value, document.getElementById('day-end').value);
+                if (h > 0) { payloadBatch.push({ telegram_id: telegramId, hours: h, shift_type: "Day Shift", date: todayDate }); totalAddedHours += h; }
             }
             if (document.getElementById('check-evening').checked) {
-                const computed = calculateHoursBetween(document.getElementById('evening-start').value, document.getElementById('evening-end').value);
-                if (computed > 0) payloadBatch.push({ telegram_id: telegramId, hours: computed, shift_type: "Evening Shift", date: todayDate });
+                const h = calculateHoursBetween(document.getElementById('evening-start').value, document.getElementById('evening-end').value);
+                if (h > 0) { payloadBatch.push({ telegram_id: telegramId, hours: h, shift_type: "Evening Shift", date: todayDate }); totalAddedHours += h; }
             }
             if (document.getElementById('check-night').checked) {
-                const computed = calculateHoursBetween(document.getElementById('night-start').value, document.getElementById('night-end').value);
-                if (computed > 0) payloadBatch.push({ telegram_id: telegramId, hours: computed, shift_type: "Night Shift", date: todayDate });
+                const h = calculateHoursBetween(document.getElementById('night-start').value, document.getElementById('night-end').value);
+                if (h > 0) { payloadBatch.push({ telegram_id: telegramId, hours: h, shift_type: "Night Shift", date: todayDate }); totalAddedHours += h; }
             }
 
             if (payloadBatch.length === 0) {
-                tg.showAlert("No active working durations configured.");
+                tg.showAlert("No durations checked.");
                 return;
             }
 
-            await dispatchPayloads(payloadBatch);
+            await dispatchPayloads(payloadBatch, `Logged! Worked ${totalAddedHours.toFixed(2)} hrs. Amazing job! 🎉`);
         }
 
         async function logHolidayToday() {
             const todayDate = new Date().toISOString().split('T')[0];
-            const holidayPayload = [{
-                telegram_id: telegramId,
-                hours: 0.0,
-                shift_type: "HOLIDAY",
-                date: todayDate
-            }];
-            await dispatchPayloads(holidayPayload);
+            const p = [{ telegram_id: telegramId, hours: 0.0, shift_type: "HOLIDAY", date: todayDate }];
+            await dispatchPayloads(p, "Holiday committed! Rest well! ☀️");
         }
 
-        async function dispatchPayloads(batch) {
+        async function dispatchPayloads(batch, microNote) {
             try {
                 let okCount = 0;
                 for (const p of batch) {
-                    const res = await fetch(`${BACKEND_API_URL}/log-shift`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(p)
-                    });
+                    const res = await fetch(`${BACKEND_API_URL}/log-shift`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
                     if (res.ok) okCount++;
                 }
                 if (okCount > 0) {
                     if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+                    tg.showPopup({ title: 'EarnTrack Ledger', message: microNote, buttons: [{type: 'ok'}] });
                     fetchRealtimeData();
-                    // Auto hit bot endpoint to test statement updates instantly
-                    await fetch(`${BACKEND_API_URL}/bot/weekly-report?telegram_id=${telegramId}&username=${username}&hourly_rate=${appConfig.hourlyRate}&target=${appConfig.monthlyTarget}&limit=${appConfig.weeklyLimit}`);
                 }
             } catch (err) {
-                tg.showAlert("API Processing Fault connection lost.");
+                tg.showAlert("API Error.");
             }
         }
 
         function resetApp() {
-            if(confirm("Reset runtime states?")) {
-                localStorage.clear();
-                location.reload();
-            }
+            if(confirm("Reset?")) { localStorage.clear(); location.reload(); }
         }
     </script>
 </body>
