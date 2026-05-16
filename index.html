@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EarnTrack - Lab SandBox</title>
+    <title>EarnTrack - Automated Operations Engine</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -69,8 +69,8 @@
 
     <div class="app-container">
         <div id="screen-loading" class="screen active" style="text-align: center; padding-top: 50px;">
-            <h2>Sandbox Profiler Running...</h2>
-            <p style="color: var(--muted-text)">Continuous back-to-back testing active.</p>
+            <h2>EarnTrack Loading...</h2>
+            <p style="color: var(--muted-text)">Verifying storage channels...</p>
         </div>
 
         <div id="screen-onboarding" class="screen">
@@ -100,7 +100,7 @@
 
         <div id="screen-dashboard" class="screen">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2>EarnTrack Lab</h2>
+                <h2>EarnTrack Live</h2>
                 <span id="user-display" style="font-size: 12px; color: var(--accent-color);">@Username</span>
             </div>
 
@@ -125,7 +125,7 @@
             </div>
 
             <div class="calendar-card">
-                <span class="stat-label">Fixed Target Time Horizon Ledger</span>
+                <span class="stat-label">Active Time Horizon Horizon Ledger</span>
                 <div class="calendar-grid">
                     <div class="calendar-day-label">Mon</div><div class="calendar-day-label">Tue</div><div class="calendar-day-label">Wed</div><div class="calendar-day-label">Thu</div><div class="calendar-day-label">Fri</div><div class="calendar-day-label">Sat</div><div class="calendar-day-label">Sun</div>
                     <div class="calendar-day" id="day-1">M</div>
@@ -139,7 +139,7 @@
             </div>
 
             <div class="log-panel">
-                <span class="stat-label" style="display:block; margin-bottom: 16px; font-weight: bold;">Log Test Entry</span>
+                <span class="stat-label" style="display:block; margin-bottom: 16px; font-weight: bold;">Log Entry Placement</span>
                 
                 <div class="input-group" style="margin-bottom: 16px;">
                     <label style="color: var(--accent-color);">Target Logging Day</label>
@@ -317,34 +317,45 @@
                 }
                 if (okCount > 0) {
                     if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-                    tg.showPopup({ title: 'EarnTrack Ledger', message: microNote, buttons: [{type: 'ok'}] });
-                    fetchRealtimeData();
                     
-                    // IMMEDIATE SUNDAY DELIVERY DETECTOR ENGINE RULE
                     if (dayName === "Sunday") {
-                        triggerImmediateTelegramReport();
+                        // Sunday submission logic: Send the report and clear the weekly log state from the UI
+                        tg.showPopup({ 
+                            title: 'Week Completed!', 
+                            message: `Sunday processing finished. Your structured timesheet is being dispatched directly to your Bot Chat Page now! 🚀`, 
+                            buttons: [{type: 'ok'}] 
+                        });
+                        await triggerSundayClosureReport();
+                    } else {
+                        // Standard weekday alert layout popup context
+                        tg.showPopup({ title: 'EarnTrack Ledger', message: microNote, buttons: [{type: 'ok'}] });
+                        fetchRealtimeData();
                     }
                 }
             } catch (err) {
-                tg.showAlert("API Error.");
+                tg.showAlert("API Error encountered.");
             }
         }
 
-        async function triggerImmediateTelegramReport() {
+        async function triggerSundayClosureReport() {
             try {
                 const url = `${BACKEND_API_URL}/bot/weekly-report?telegram_id=${telegramId}&username=${username}&hourly_rate=${appConfig.hourlyRate}&target=${appConfig.monthlyTarget}&limit=${appConfig.weeklyLimit}`;
                 const response = await fetch(url);
                 const data = await response.json();
                 
-                // Print the generated report to WebApp UI console for easy pipeline validation
-                console.log("Instant Telemetry Broadcast:", data.structured_text);
-                
-                // Send directly into Telegram message flow if user is inside WebApp session context
+                // Dispatches the structured report block out to the chatbot window
                 if (tg.sendData) {
-                    tg.sendData(JSON.stringify({ event: "weekly_report_ready", text: data.structured_text }));
+                    tg.sendData(JSON.stringify({ event: "weekly_report_closure", text: data.structured_text }));
                 }
+
+                // Wipes the week history on the backend so the user can start tracking the next week
+                await fetch(`${BACKEND_API_URL}/clear-week?telegram_id=${telegramId}`);
+                
+                // Reset calendar selection back to default state
+                document.getElementById('test-target-day').value = "Monday";
+                fetchRealtimeData();
             } catch (e) {
-                console.error("Report pipeline trigger failed", e);
+                console.error("Closure pipeline engine execution failure", e);
             }
         }
 
