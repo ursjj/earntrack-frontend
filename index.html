@@ -58,7 +58,7 @@
         .calendar-day.worked { background: rgba(100, 255, 218, 0.15); border-color: var(--accent-color); color: var(--accent-color); }
 
         .log-panel { background-color: var(--card-color); border-radius: 16px; padding: 20px; text-align: left; }
-        .time-select-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+        .time-select-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
         .btn-action { background-color: var(--accent-color); color: #0a192f; border: none; width: 100%; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; }
         .btn-action:disabled { background-color: rgba(255,255,255,0.05); color: var(--muted-text); cursor: not-allowed; }
@@ -140,29 +140,74 @@
             </div>
 
             <div class="log-panel">
-                <span class="stat-label" style="display:block; margin-bottom: 12px;">Log Shift Segment</span>
+                <span class="stat-label" style="display:block; margin-bottom: 16px; font-weight: bold;">Log Today's Shifts</span>
                 
-                <div class="input-group">
-                    <label>Shift Category</label>
-                    <select id="shift-type" class="dropdown-field">
-                        <option value="Day Shift">☀️ Day Shift</option>
-                        <option value="Evening Shift">🌆 Evening Shift</option>
-                        <option value="Night Shift">🌙 Night Shift</option>
-                    </select>
+                <!-- DAY SHIFT SECTION -->
+                <div class="shift-entry-row" style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 10px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    <label style="display: flex; align-items: center; font-size: 14px; font-weight: 600; color: var(--accent-color); margin-bottom: 8px; cursor: pointer;">
+                        <input type="checkbox" id="check-day" style="margin-right: 8px; transform: scale(1.2);" checked> 
+                        ☀️ Day Shift (7:30am - 2:45pm)
+                    </label>
+                    <div class="time-select-row">
+                        <select id="day-hours" class="dropdown-field">
+                            <option value="0">0 hrs</option><option value="1">1 hr</option><option value="2">2 hrs</option>
+                            <option value="3">3 hrs</option><option value="4">4 hrs</option><option value="5">5 hrs</option>
+                            <option value="6">6 hrs</option><option value="7" selected>7 hrs</option><option value="8">8 hrs</option>
+                            <option value="9">9 hrs</option><option value="10">10 hrs</option>
+                        </select>
+                        <select id="day-minutes" class="dropdown-field">
+                            <option value="0">00 mins</option>
+                            <option value="15">15 mins</option>
+                            <option value="30" selected>30 mins</option>
+                            <option value="45">45 mins</option>
+                        </select>
+                    </div>
                 </div>
 
-                <label style="display: block; font-size: 13px; color: var(--muted-text); text-transform: uppercase; margin-bottom: 8px;">Duration</label>
-                <div class="time-select-row">
-                    <select id="shift-hours" class="dropdown-field"></select>
-                    <select id="shift-minutes" class="dropdown-field">
-                        <option value="0">00 mins</option>
-                        <option value="15">15 mins</option>
-                        <option value="30">30 mins</option>
-                        <option value="45">45 mins</option>
-                    </select>
+                <!-- EVENING SHIFT SECTION -->
+                <div class="shift-entry-row" style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 10px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    <label style="display: flex; align-items: center; font-size: 14px; font-weight: 600; color: #ffb86c; margin-bottom: 8px; cursor: pointer;">
+                        <input type="checkbox" id="check-evening" style="margin-right: 8px; transform: scale(1.2);"> 
+                        🌆 Evening Shift (4:00pm - 10:00pm)
+                    </label>
+                    <div class="time-select-row">
+                        <select id="evening-hours" class="dropdown-field">
+                            <option value="0">0 hrs</option><option value="1">1 hr</option><option value="2">2 hrs</option>
+                            <option value="3">3 hrs</option><option value="4">4 hrs</option><option value="5">5 hrs</option>
+                            <option value="6" selected>6 hrs</option><option value="7">7 hrs</option><option value="8">8 hrs</option>
+                        </select>
+                        <select id="evening-minutes" class="dropdown-field">
+                            <option value="0" selected>00 mins</option>
+                            <option value="15">15 mins</option>
+                            <option value="30">30 mins</option>
+                            <option value="45">45 mins</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- NIGHT SHIFT SECTION -->
+                <div class="shift-entry-row" style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 10px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05);">
+                    <label style="display: flex; align-items: center; font-size: 14px; font-weight: 600; color: #bd93f9; margin-bottom: 8px; cursor: pointer;">
+                        <input type="checkbox" id="check-night" style="margin-right: 8px; transform: scale(1.2);"> 
+                        🌙 Night Shift
+                    </label>
+                    <div class="time-select-row">
+                        <select id="night-hours" class="dropdown-field">
+                            <option value="0" selected>00 hrs</option><option value="1">1 hr</option><option value="2">2 hrs</option>
+                            <option value="3">3 hrs</option><option value="4">4 hrs</option><option value="5">5 hrs</option>
+                            <option value="6">6 hrs</option><option value="7">7 hrs</option><option value="8">8 hrs</option>
+                            <option value="9">9 hrs</option><option value="10">10 hrs</option>
+                        </select>
+                        <select id="night-minutes" class="dropdown-field">
+                            <option value="0" selected>00 mins</option>
+                            <option value="15">15 mins</option>
+                            <option value="30">30 mins</option>
+                            <option value="45">45 mins</option>
+                        </select>
+                    </div>
                 </div>
                 
-                <button class="btn-action" id="submit-btn" onclick="logShiftRealtime()">Confirm Shift Block</button>
+                <button class="btn-action" id="submit-btn" onclick="logShiftRealtime()">Confirm Day's Shift Data</button>
             </div>
 
             <span class="reset-link" onclick="resetApp()">Wipe Local Config Data</span>
@@ -185,7 +230,6 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('user-display').innerText = `@${username}`;
-            populateHoursDropdown();
             highlightTodayInCalendar();
             
             const localSaved = localStorage.getItem('earntrack_local_setup');
@@ -196,17 +240,6 @@
                 showScreen('screen-onboarding');
             }
         });
-
-        function populateHoursDropdown() {
-            const hrSelect = document.getElementById('shift-hours');
-            for(let i = 0; i <= 16; i++) {
-                let opt = document.createElement('option');
-                opt.value = i;
-                opt.innerText = i + " hrs";
-                if(i === 7) opt.selected = true;
-                hrSelect.appendChild(opt);
-            }
-        }
 
         function showScreen(screenId) {
             document.getElementById('screen-loading').classList.remove('active');
@@ -230,7 +263,7 @@
             const targetInput = parseFloat(document.getElementById('input-target').value);
 
             if (isNaN(rateInput) || rateInput <= 0 || isNaN(targetInput) || targetInput <= 0) {
-                alert("Please complete setup config elements cleanly.");
+                alert("Please verification settings input rules.");
                 return;
             }
 
@@ -259,49 +292,73 @@
                     document.getElementById(`day-${dayIdx}`).classList.add('worked');
                 });
 
-                // Note: Lock constraint bypass loop logic skipped here per instructions to keep input continuous.
                 showScreen('screen-dashboard');
             } catch (err) {
-                console.error("API connection error downlinks.", err);
+                console.error("API Error connecting to database context container.", err);
                 showScreen('screen-dashboard');
             }
         }
 
         async function logShiftRealtime() {
-            const hrs = parseInt(document.getElementById('shift-hours').value);
-            const mins = parseInt(document.getElementById('shift-minutes').value);
-            const shiftType = document.getElementById('shift-type').value;
-            
-            const totalHoursFraction = hrs + (mins / 60);
+            const payloadBatch = [];
+            const todayDate = new Date().toISOString().split('T')[0];
 
-            const payload = {
-                telegram_id: telegramId,
-                hours: totalHoursFraction,
-                shift_type: shiftType,
-                date: new Date().toISOString().split('T')[0]
-            };
+            // Day Shift
+            if (document.getElementById('check-day').checked) {
+                const hrs = parseInt(document.getElementById('day-hours').value);
+                const mins = parseInt(document.getElementById('day-minutes').value);
+                if (hrs + mins > 0) {
+                    payloadBatch.push({ telegram_id: telegramId, hours: hrs + (mins / 60), shift_type: "Day Shift", date: todayDate });
+                }
+            }
+
+            // Evening Shift
+            if (document.getElementById('check-evening').checked) {
+                const hrs = parseInt(document.getElementById('evening-hours').value);
+                const mins = parseInt(document.getElementById('evening-minutes').value);
+                if (hrs + mins > 0) {
+                    payloadBatch.push({ telegram_id: telegramId, hours: hrs + (mins / 60), shift_type: "Evening Shift", date: todayDate });
+                }
+            }
+
+            // Night Shift
+            if (document.getElementById('check-night').checked) {
+                const hrs = parseInt(document.getElementById('night-hours').value);
+                const mins = parseInt(document.getElementById('night-minutes').value);
+                if (hrs + mins > 0) {
+                    payloadBatch.push({ telegram_id: telegramId, hours: hrs + (mins / 60), shift_type: "Night Shift", date: todayDate });
+                }
+            }
+
+            if (payloadBatch.length === 0) {
+                tg.showAlert("Please select at least one shift type and verify its hours.");
+                return;
+            }
 
             try {
-                const response = await fetch(`${BACKEND_API_URL}/log-shift`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                let successCount = 0;
+                for (const payload of payloadBatch) {
+                    const response = await fetch(`${BACKEND_API_URL}/log-shift`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (response.ok) successCount++;
+                }
 
-                if (response.ok) {
+                if (successCount > 0) {
                     if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+                    document.getElementById('check-evening').checked = false;
+                    document.getElementById('check-night').checked = false;
                     fetchRealtimeData();
-                } else {
-                    const errData = await response.json();
-                    tg.showAlert(errData.detail || "Transaction issue.");
                 }
             } catch (err) {
-                tg.showAlert("API connection execution error.");
+                tg.showAlert("API Connection Error execution fault.");
             }
         }
 
         function resetApp() {
-            if(confirm("Wipe setup profiles data logs?")) {
+            if(confirm("Wipe setup profiles configuration state logs? This breaks database tracking connections link.")) {
                 localStorage.clear();
                 location.reload();
             }
