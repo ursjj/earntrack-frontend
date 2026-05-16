@@ -35,7 +35,8 @@
 
         .input-group { margin-bottom: 20px; }
         .input-group label { display: block; font-size: 13px; color: var(--muted-text); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
-        .input-field { width: 100%; background-color: var(--card-color); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 14px; border-radius: 12px; font-size: 16px; box-sizing: border-box; outline: none; }
+        .input-field, .dropdown-field { width: 100%; background-color: var(--card-color); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 14px; border-radius: 12px; font-size: 16px; box-sizing: border-box; outline: none; }
+        .input-field:focus, .dropdown-field:focus { border-color: var(--accent-color); }
         
         .radio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .radio-btn { background-color: var(--card-color); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 14px; border-radius: 12px; text-align: center; font-size: 16px; cursor: pointer; font-weight: 600; }
@@ -124,7 +125,7 @@
             </div>
 
             <div class="calendar-card">
-                <span class="stat-label">Fixed Target Time Horizon Horizon Ledger</span>
+                <span class="stat-label">Fixed Target Time Horizon Ledger</span>
                 <div class="calendar-grid">
                     <div class="calendar-day-label">Mon</div><div class="calendar-day-label">Tue</div><div class="calendar-day-label">Wed</div><div class="calendar-day-label">Thu</div><div class="calendar-day-label">Fri</div><div class="calendar-day-label">Sat</div><div class="calendar-day-label">Sun</div>
                     <div class="calendar-day" id="day-1">M</div>
@@ -139,6 +140,19 @@
 
             <div class="log-panel">
                 <span class="stat-label" style="display:block; margin-bottom: 16px; font-weight: bold;">Log Test Entry</span>
+                
+                <div class="input-group" style="margin-bottom: 16px;">
+                    <label style="color: var(--accent-color);">Target Logging Day</label>
+                    <select id="test-target-day" class="dropdown-field" style="background-color: rgba(255,255,255,0.05); padding: 10px;">
+                        <option value="Monday">Monday</option>
+                        <option value="Tuesday">Tuesday</option>
+                        <option value="Wednesday">Wednesday</option>
+                        <option value="Thursday">Thursday</option>
+                        <option value="Friday">Friday</option>
+                        <option value="Saturday">Saturday</option>
+                        <option value="Sunday" selected>Sunday</option>
+                    </select>
+                </div>
                 
                 <div class="shift-entry-row" style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 10px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05);">
                     <label style="display: flex; align-items: center; font-size: 14px; font-weight: 600; color: var(--accent-color); margin-bottom: 8px; cursor: pointer;">
@@ -242,8 +256,7 @@
                 for(let i=0; i<7; i++) document.getElementById(`day-${i}`).classList.remove('worked', 'holiday');
                 
                 data.weekShifts.forEach(shift => {
-                    const dayIdx = new Date(shift.date).getDay();
-                    const card = document.getElementById(`day-${dayIdx}`);
+                    const card = document.getElementById(`day-${shift.day_index}`);
                     if (card) {
                         if (shift.shift_type === "HOLIDAY") card.classList.add('holiday');
                         else if(shift.hours > 0) card.classList.add('worked');
@@ -266,20 +279,20 @@
 
         async function logShiftRealtime() {
             const payloadBatch = [];
-            const todayDate = new Date().toISOString().split('T')[0];
+            const selectedDayName = document.getElementById('test-target-day').value;
             let totalAddedHours = 0;
 
             if (document.getElementById('check-day').checked) {
                 const h = calculateHoursBetween(document.getElementById('day-start').value, document.getElementById('day-end').value);
-                if (h > 0) { payloadBatch.push({ telegram_id: telegramId, hours: h, shift_type: "Day Shift", date: todayDate }); totalAddedHours += h; }
+                if (h > 0) { payloadBatch.push({ telegram_id: telegramId, hours: h, shift_type: "Day Shift", day_name: selectedDayName }); totalAddedHours += h; }
             }
             if (document.getElementById('check-evening').checked) {
                 const h = calculateHoursBetween(document.getElementById('evening-start').value, document.getElementById('evening-end').value);
-                if (h > 0) { payloadBatch.push({ telegram_id: telegramId, hours: h, shift_type: "Evening Shift", date: todayDate }); totalAddedHours += h; }
+                if (h > 0) { payloadBatch.push({ telegram_id: telegramId, hours: h, shift_type: "Evening Shift", day_name: selectedDayName }); totalAddedHours += h; }
             }
             if (document.getElementById('check-night').checked) {
                 const h = calculateHoursBetween(document.getElementById('night-start').value, document.getElementById('night-end').value);
-                if (h > 0) { payloadBatch.push({ telegram_id: telegramId, hours: h, shift_type: "Night Shift", date: todayDate }); totalAddedHours += h; }
+                if (h > 0) { payloadBatch.push({ telegram_id: telegramId, hours: h, shift_type: "Night Shift", day_name: selectedDayName }); totalAddedHours += h; }
             }
 
             if (payloadBatch.length === 0) {
@@ -287,13 +300,13 @@
                 return;
             }
 
-            await dispatchPayloads(payloadBatch, `Logged! Worked ${totalAddedHours.toFixed(2)} hrs. Amazing job! 🎉`);
+            await dispatchPayloads(payloadBatch, `Logged! Worked ${totalAddedHours.toFixed(2)} hrs on ${selectedDayName}. 🎉`);
         }
 
         async function logHolidayToday() {
-            const todayDate = new Date().toISOString().split('T')[0];
-            const p = [{ telegram_id: telegramId, hours: 0.0, shift_type: "HOLIDAY", date: todayDate }];
-            await dispatchPayloads(p, "Holiday committed! Rest well! ☀️");
+            const selectedDayName = document.getElementById('test-target-day').value;
+            const p = [{ telegram_id: telegramId, hours: 0.0, shift_type: "HOLIDAY", day_name: selectedDayName }];
+            await dispatchPayloads(p, `${selectedDayName} committed as Holiday! Rest well! ☀️`);
         }
 
         async function dispatchPayloads(batch, microNote) {
