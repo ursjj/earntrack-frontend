@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EarnTrack Sandbox - Multi-Shift Tester</title>
+    <title>EarnTrack Sandbox - Fully Editable Tester</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -32,7 +32,9 @@
         
         /* Sandbox Dashboard Styling */
         .sandbox-panel { background: rgba(255, 170, 0, 0.07); border: 1px dashed var(--sandbox-color); border-radius: 12px; padding: 14px; margin-bottom: 16px; }
-        .sandbox-title { font-size: 11px; color: var(--sandbox-color); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px; }
+        .sandbox-title { font-size: 11px; color: var(--sandbox-color); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 12px; }
+        
+        .sandbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
         
         .booster-card { background-color: var(--card-color); border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(100, 255, 218, 0.05); }
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
@@ -46,8 +48,9 @@
         .shift-row { border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; margin-bottom: 12px; }
         .time-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 4px; }
         
-        .time-box-field, .date-input-field { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; padding: 10px; font-size: 14px; outline: none; text-align: center; width: 100%; box-sizing: border-box; }
-        
+        .time-box-field, .sandbox-input-field { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; padding: 10px; font-size: 14px; outline: none; text-align: center; width: 100%; box-sizing: border-box; }
+        .sandbox-input-field:focus { border-color: var(--sandbox-color); }
+
         .btn-action { background-color: var(--accent-color); color: #0a192f; border: none; width: 100%; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-bottom: 10px; }
         .btn-secondary { background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white; width: 100%; padding: 14px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
         .holiday-toggle { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; font-size: 14px; color: var(--muted-text); }
@@ -60,11 +63,21 @@
             
             <div class="sandbox-panel">
                 <span class="sandbox-title">🛠️ UNLOCKED TESTING TOOLKIT</span>
-                <div style="display: grid; grid-template-columns: 1fr; gap: 8px;">
+                
+                <div class="sandbox-grid">
                     <div>
-                        <span style="font-size: 11px; color: var(--muted-text); display:block; margin-bottom:4px;">Set Custom Target Simulation Date:</span>
-                        <input type="date" id="sandbox-date" class="date-input-field" value="2026-05-01">
+                        <span style="font-size: 10px; color: var(--sandbox-color); display:block; margin-bottom:4px;">Hourly Wage (£/hr):</span>
+                        <input type="number" id="sandbox-rate" class="sandbox-input-field" value="11.44" step="0.01" onchange="fetchRealtimeData()">
                     </div>
+                    <div>
+                        <span style="font-size: 10px; color: var(--sandbox-color); display:block; margin-bottom:4px;">Monthly Target (£):</span>
+                        <input type="number" id="sandbox-target" class="sandbox-input-field" value="1500" onchange="fetchRealtimeData()">
+                    </div>
+                </div>
+
+                <div style="margin-top: 10px;">
+                    <span style="font-size: 10px; color: var(--muted-text); display:block; margin-bottom:4px;">Target Simulation Date:</span>
+                    <input type="date" id="sandbox-date" class="sandbox-input-field" style="border-color: rgba(255,170,0,0.3);" value="2026-05-01">
                 </div>
             </div>
 
@@ -80,8 +93,8 @@
                         <div class="stat-value" id="dash-total-earned">£0.00</div>
                     </div>
                     <div class="stat-box">
-                        <span class="stat-label">Active Wage Rate</span>
-                        <div class="stat-value">£11.44/hr</div>
+                        <span class="stat-label">Live Wage Rate</span>
+                        <div class="stat-value" id="dash-live-rate">£11.44/hr</div>
                     </div>
                 </div>
                 <div class="progress-container">
@@ -143,8 +156,6 @@
         const username = telegramUser ? (telegramUser.username || telegramUser.first_name) : "Tester";
         
         const BACKEND_API_URL = "https://earntrack-backend.onrender.com/api"; 
-        const HOURLY_RATE = 11.44;
-        const TARGET = 1500;
 
         window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('user-display').innerText = `@${username}`;
@@ -165,14 +176,20 @@
         }
 
         async function fetchRealtimeData() {
+            // Read values directly from the UI inputs dynamically
+            const rate = parseFloat(document.getElementById('sandbox-rate').value) || 11.44;
+            const target = parseFloat(document.getElementById('sandbox-target').value) || 1500;
+
+            document.getElementById('dash-live-rate').innerText = `£${rate.toFixed(2)}/hr`;
+
             try {
-                const response = await fetch(`${BACKEND_API_URL}/user-data?telegram_id=${telegramId}&hourly_rate=${HOURLY_RATE}`);
+                const response = await fetch(`${BACKEND_API_URL}/user-data?telegram_id=${telegramId}&hourly_rate=${rate}`);
                 const data = await response.json();
 
                 document.getElementById('dash-total-earned').innerText = '£' + data.monthlyCumulativeEarnings.toFixed(2);
-                const progressPercent = Math.min(100, (data.monthlyCumulativeEarnings / TARGET) * 100);
+                const progressPercent = Math.min(100, (data.monthlyCumulativeEarnings / target) * 100);
                 document.getElementById('dash-progress-fill').style.width = progressPercent + '%';
-                document.getElementById('dash-progress-text').innerText = `£${data.monthlyCumulativeEarnings.toFixed(0)} / £${TARGET}`;
+                document.getElementById('dash-progress-text').innerText = `£${data.monthlyCumulativeEarnings.toFixed(0)} / £${target}`;
             } catch (err) { console.error(err); }
         }
 
@@ -189,7 +206,7 @@
 
             const payload = {
                 telegram_id: telegramId,
-                date: targetDate, // Uses custom simulated date input from tester panel
+                date: targetDate,
                 day_hours: dayHours,
                 evening_hours: eveHours,
                 night_hours: nightHours,
@@ -207,7 +224,7 @@
                     if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
                     fetchRealtimeData();
                     
-                    // Increment date forward automatically by 1 day to speed up user testing lifecycle
+                    // Increment calendar date forward automatically by 1 day
                     let d = new Date(targetDate);
                     d.setDate(d.getDate() + 1);
                     document.getElementById('sandbox-date').value = d.toISOString().split('T')[0];
@@ -215,18 +232,26 @@
             } catch (err) { tg.showAlert("API Error"); }
         }
 
-        // 📤 SENDS MESSAGE STRUCTURING INSTRUCTIONS TO THE BOT CHAT WINDOW
         async function triggerChatReport(type) {
+            const rate = parseFloat(document.getElementById('sandbox-rate').value) || 11.44;
+            const target = parseFloat(document.getElementById('sandbox-target').value) || 1500;
+
             try {
                 const response = await fetch(`${BACKEND_API_URL}/trigger-bot-report`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ telegram_id: telegramId, report_type: type, username: username })
+                    body: JSON.stringify({ 
+                        telegram_id: telegramId, 
+                        report_type: type, 
+                        username: username,
+                        hourly_rate: rate,
+                        monthly_target: target
+                    })
                 });
                 
                 if (response.ok) {
-                    tg.showPopup({ title: "Report Sent! 🚀", message: `Check your main EarnTrack Bot chat screen. The formatted text sheet has been pushed.`, buttons: [{type: 'ok'}] });
-                    tg.close(); // Closes the webapp window smoothly so they see the conversation
+                    tg.showPopup({ title: "Report Sent! 🚀", message: `Check your main EarnTrack Bot chat screen.`, buttons: [{type: 'ok'}] });
+                    tg.close(); 
                 }
             } catch (err) { tg.showAlert("Failed to route message transmission."); }
         }
