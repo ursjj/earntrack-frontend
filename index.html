@@ -211,7 +211,6 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('user-display').innerText = `@${username}`;
-            
             const localSaved = localStorage.getItem('earntrack_local_setup');
             if (localSaved) {
                 appConfig = JSON.parse(localSaved);
@@ -300,16 +299,16 @@
                 return;
             }
 
-            await dispatchPayloads(payloadBatch, `Logged! Worked ${totalAddedHours.toFixed(2)} hrs on ${selectedDayName}. 🎉`);
+            await dispatchPayloads(payloadBatch, `Logged! Worked ${totalAddedHours.toFixed(2)} hrs on ${selectedDayName}. 🎉`, selectedDayName);
         }
 
         async function logHolidayToday() {
             const selectedDayName = document.getElementById('test-target-day').value;
             const p = [{ telegram_id: telegramId, hours: 0.0, shift_type: "HOLIDAY", day_name: selectedDayName }];
-            await dispatchPayloads(p, `${selectedDayName} committed as Holiday! Rest well! ☀️`);
+            await dispatchPayloads(p, `${selectedDayName} committed as Holiday! Rest well! ☀️`, selectedDayName);
         }
 
-        async function dispatchPayloads(batch, microNote) {
+        async function dispatchPayloads(batch, microNote, dayName) {
             try {
                 let okCount = 0;
                 for (const p of batch) {
@@ -320,9 +319,32 @@
                     if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
                     tg.showPopup({ title: 'EarnTrack Ledger', message: microNote, buttons: [{type: 'ok'}] });
                     fetchRealtimeData();
+                    
+                    // IMMEDIATE SUNDAY DELIVERY DETECTOR ENGINE RULE
+                    if (dayName === "Sunday") {
+                        triggerImmediateTelegramReport();
+                    }
                 }
             } catch (err) {
                 tg.showAlert("API Error.");
+            }
+        }
+
+        async function triggerImmediateTelegramReport() {
+            try {
+                const url = `${BACKEND_API_URL}/bot/weekly-report?telegram_id=${telegramId}&username=${username}&hourly_rate=${appConfig.hourlyRate}&target=${appConfig.monthlyTarget}&limit=${appConfig.weeklyLimit}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                // Print the generated report to WebApp UI console for easy pipeline validation
+                console.log("Instant Telemetry Broadcast:", data.structured_text);
+                
+                // Send directly into Telegram message flow if user is inside WebApp session context
+                if (tg.sendData) {
+                    tg.sendData(JSON.stringify({ event: "weekly_report_ready", text: data.structured_text }));
+                }
+            } catch (e) {
+                console.error("Report pipeline trigger failed", e);
             }
         }
 
