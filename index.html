@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EarnTrack - Real-Time Engine</title>
+    <title>EarnTrack Pro - Triple Shift Engine</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -33,43 +33,37 @@
         h2 { font-size: 24px; margin-bottom: 8px; background: linear-gradient(45deg, #ffffff, var(--accent-color)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         p.subtitle { color: var(--muted-text); font-size: 14px; margin-top: 0; margin-bottom: 24px; }
 
-        /* Onboarding Styles */
-        .input-group { margin-bottom: 24px; }
-        .input-group label { display: block; font-size: 13px; color: var(--muted-text); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; font-size: 12px; color: var(--muted-text); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
         .input-field { width: 100%; background-color: var(--card-color); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 14px; border-radius: 12px; font-size: 16px; box-sizing: border-box; outline: none; }
-        .input-field:focus { border-color: var(--accent-color); }
+        
         .radio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .radio-btn { background-color: var(--card-color); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 14px; border-radius: 12px; text-align: center; font-size: 16px; cursor: pointer; font-weight: 600; }
         .radio-btn.selected { border-color: var(--accent-color); background-color: rgba(100, 255, 218, 0.1); color: var(--accent-color); }
 
-        /* Dashboard Elements */
+        /* Dashboard Module Layouts */
         .booster-card { background-color: var(--card-color); border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(100, 255, 218, 0.05); }
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
         .stat-label { font-size: 11px; color: var(--muted-text); text-transform: uppercase; letter-spacing: 0.5px; }
-        .stat-value { font-size: 24px; font-weight: 700; margin-top: 4px; }
+        .stat-value { font-size: 22px; font-weight: 700; margin-top: 4px; }
         
         .progress-bar { background-color: rgba(255, 255, 255, 0.1); height: 10px; border-radius: 5px; overflow: hidden; margin-top: 6px; }
         .progress-fill { background: linear-gradient(90deg, #4dadf7, var(--accent-color)); height: 100%; width: 0%; transition: width 0.8s ease-in-out; }
 
-        /* Calendar Styling */
-        .calendar-card { background-color: var(--card-color); border-radius: 16px; padding: 16px; margin-bottom: 20px; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; margin-top: 10px; }
-        .calendar-day-label { font-size: 11px; color: var(--muted-text); font-weight: 600; }
-        .calendar-day { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 8px 0; font-size: 13px; font-weight: 600; color: var(--muted-text); }
-        .calendar-day.today { border-color: #4dadf7; color: #4dadf7; }
-        .calendar-day.worked { background: rgba(100, 255, 218, 0.15); border-color: var(--accent-color); color: var(--accent-color); }
-
-        /* Controls */
-        .log-panel { background-color: var(--card-color); border-radius: 16px; padding: 20px; text-align: center; }
-        .hours-display { font-size: 44px; font-weight: 800; color: var(--accent-color); margin: 8px 0; }
-        .modern-slider { -webkit-appearance: none; width: 100%; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.1); outline: none; margin: 20px 0; }
-        .modern-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: var(--accent-color); cursor: pointer; }
-        .modern-slider:disabled::-webkit-slider-thumb { background: var(--muted-text); cursor: not-allowed; }
+        /* Triple Shift Timings Panel Matrix */
+        .shift-log-panel { background-color: var(--card-color); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+        .shift-row { border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 14px; margin-bottom: 14px; }
+        .shift-row:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+        .time-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 4px; }
+        
+        .time-box-field { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; padding: 10px; font-size: 14px; outline: none; text-align: center; width: 100%; box-sizing: border-box; }
+        .time-box-field:focus { border-color: var(--accent-color); }
 
         .btn-action { background-color: var(--accent-color); color: #0a192f; border: none; width: 100%; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; }
         .btn-action:disabled { background-color: rgba(255,255,255,0.05); color: var(--muted-text); cursor: not-allowed; }
         
-        .locked-message { color: var(--error-color); font-size: 13px; margin-top: 10px; display: none; font-weight: 600; }
+        .locked-message { color: var(--error-color); font-size: 13px; margin-top: 10px; display: none; font-weight: 600; text-align: center; }
+        .holiday-toggle { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; font-size: 14px; color: var(--muted-text); }
         .reset-link { display: block; text-align: center; font-size: 11px; color: var(--muted-text); margin-top: 16px; text-decoration: underline; cursor: pointer; }
     </style>
 </head>
@@ -77,16 +71,16 @@
 
     <div class="app-container">
         <div id="screen-loading" class="screen active" style="text-align: center; padding-top: 50px;">
-            <h2>Authenticating...</h2>
-            <p style="color: var(--muted-text)">Securing connection with Telegram ID</p>
+            <h2>Connecting...</h2>
+            <p style="color: var(--muted-text)">Syncing triple-shift real-time architecture</p>
         </div>
 
         <div id="screen-onboarding" class="screen">
             <h2>Welcome to EarnTrack</h2>
-            <p class="subtitle">Configure your metrics parameters to get started.</p>
-            
+            <p class="subtitle">Set up your base parameters to deploy your real-time moral tracker engine.</p>
+
             <div class="input-group">
-                <label>Weekly Working Hour Target/Limit</label>
+                <label>Weekly Working Hour Limit</label>
                 <div class="radio-grid">
                     <div class="radio-btn selected" id="opt-20" onclick="setWeeklyLimit(20)">20 Hours</div>
                     <div class="radio-btn" id="opt-40" onclick="setWeeklyLimit(40)">40 Hours</div>
@@ -95,68 +89,79 @@
 
             <div class="input-group">
                 <label>Hourly Wage Rate (£ / hr)</label>
-                <input type="number" id="input-rate" class="input-field" placeholder="e.g. 11.44" value="11.44" step="0.01">
+                <input type="number" id="input-rate" class="input-field" value="11.44" step="0.01">
             </div>
 
             <div class="input-group">
                 <label>Monthly Financial Target (GBP)</label>
-                <input type="number" id="input-target" class="input-field" placeholder="e.g. 1500" value="1500">
+                <input type="number" id="input-target" class="input-field" value="1500">
             </div>
 
-            <button class="btn-action" onclick="saveConfiguration()">Generate Tracker Dashboard</button>
+            <button class="btn-action" onclick="saveConfiguration()">Generate My Dashboard</button>
         </div>
 
         <div id="screen-dashboard" class="screen">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2>EarnTrack Live</h2>
+                <h2>EarnTrack Engine</h2>
                 <span id="user-display" style="font-size: 12px; color: var(--accent-color);">@Username</span>
             </div>
 
             <div class="booster-card">
                 <div class="stats-grid">
                     <div class="stat-box">
-                        <span class="stat-label">Monthly Cumulative Pay</span>
+                        <span class="stat-label">Monthly Gross Income</span>
                         <div class="stat-value" id="dash-total-earned">£0.00</div>
                     </div>
                     <div class="stat-box">
-                        <span class="stat-label">This Week's Hours</span>
-                        <div class="stat-value" id="dash-weekly-hours">0.0 / 40h</div>
+                        <span class="stat-label">This Week's Log</span>
+                        <div class="stat-value" id="dash-weekly-hours">0.0h</div>
                     </div>
                 </div>
                 <div class="progress-container">
                     <div class="progress-header">
-                        <span>Progress Toward Monthly Target</span>
+                        <span>Monthly Target Horizon</span>
                         <span id="dash-progress-text">£0 / £1500</span>
                     </div>
                     <div class="progress-bar"><div class="progress-fill" id="dash-progress-fill"></div></div>
                 </div>
             </div>
 
-            <div class="calendar-card">
-                <span class="stat-label">Real-time Week Horizon</span>
-                <div class="calendar-grid">
-                    <div class="calendar-day-label">Mon</div><div class="calendar-day-label">Tue</div><div class="calendar-day-label">Wed</div><div class="calendar-day-label">Thu</div><div class="calendar-day-label">Fri</div><div class="calendar-day-label">Sat</div><div class="calendar-day-label">Sun</div>
-                    <div class="calendar-day" id="day-1">M</div>
-                    <div class="calendar-day" id="day-2">T</div>
-                    <div class="calendar-day" id="day-3">W</div>
-                    <div class="calendar-day" id="day-4">T</div>
-                    <div class="calendar-day" id="day-5">F</div>
-                    <div class="calendar-day" id="day-6">S</div>
-                    <div class="calendar-day" id="day-0">S</div>
+            <div class="shift-log-panel" id="log-interface-box">
+                <div class="holiday-toggle">
+                    <span>Is Today a Rest Day / Holiday?</span>
+                    <input type="checkbox" id="holiday-checkbox" onchange="toggleHolidayMode(this.checked)" style="width:20px; height:20px; accent-color:var(--accent-color);">
                 </div>
-            </div>
 
-            <div class="log-panel">
-                <span class="stat-label" id="slider-instruction">Slide to log shift duration (0 = Holiday)</span>
-                <div class="hours-display"><span id="slider-val">7.5</span><span style="font-size:20px; font-weight:500; color:var(--muted-text);"> hrs</span></div>
-                
-                <input type="range" min="0" max="16" step="0.5" value="7.5" class="modern-slider" id="hour-slider" oninput="document.getElementById('slider-val').innerText=parseFloat(this.value).toFixed(1)">
-                
-                <button class="btn-action" id="submit-btn" onclick="logShiftRealtime()">Confirm Day's Shift</button>
-                <div class="locked-message" id="lock-msg">⚠️ Window locked. Shift or Holiday already logged for today!</div>
-            </div>
+                <div id="time-picker-inputs-wrapper">
+                    <div class="shift-row">
+                        <span class="stat-label" style="color:var(--accent-color);">☀️ Day Shift Window</span>
+                        <div class="time-inputs">
+                            <div><input type="time" id="day-start" class="time-box-field" value="07:30"></div>
+                            <div><input type="time" id="day-end" class="time-box-field" value="14:45"></div>
+                        </div>
+                    </div>
 
-            <span class="reset-link" onclick="resetApp()">Wipe Local Config Data</span>
+                    <div class="shift-row">
+                        <span class="stat-label" style="color:#4dadf7;">🌙 Evening Shift Window</span>
+                        <div class="time-inputs">
+                            <div><input type="time" id="eve-start" class="time-box-field"></div>
+                            <div><input type="time" id="eve-end" class="time-box-field"></div>
+                        </div>
+                    </div>
+
+                    <div class="shift-row">
+                        <span class="stat-label" style="color:#a371f7;">🌌 Night Shift Window</span>
+                        <div class="time-inputs">
+                            <div><input type="time" id="night-start" class="time-box-field"></div>
+                            <div><input type="time" id="night-end" class="time-box-field"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-action" style="margin-top:16px;" id="submit-btn" onclick="calculateAndPostShifts()">Log Shifts & Sync Data</button>
+                <div class="locked-message" id="lock-msg">⚠️ Daily metrics submitted. Log locked until tomorrow!</div>
+            </div>
+            <span class="reset-link" onclick="resetApp()">Change Core Setup Config</span>
         </div>
     </div>
 
@@ -164,23 +169,16 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Extract native verification parameters from Telegram profile matrix
         const telegramUser = tg.initDataUnsafe?.user;
-        const telegramId = telegramUser ? telegramUser.id.toString() : "DEV_MOCK_USER";
+        const telegramId = telegramUser ? telegramUser.id.toString() : "DEV_USER";
         const username = telegramUser ? (telegramUser.username || telegramUser.first_name) : "Developer";
         
-        // PASTE YOUR GENERATED RENDER API URL ENDPOINT LINK HERE
         const BACKEND_API_URL = "https://earntrack-backend.onrender.com/api"; 
-
         let appConfig = { weeklyLimit: 40, hourlyRate: 11.44, monthlyTarget: 1500 };
-        let todayDayIndex = new Date().getDay(); 
 
         window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('user-display').innerText = `@${username}`;
-            highlightTodayInCalendar();
-            
-            // Check if user has basic settings configured locally first
-            const localSaved = localStorage.getItem('earntrack_local_setup');
+            const localSaved = localStorage.getItem('earntrack_v3_setup');
             if (localSaved) {
                 appConfig = JSON.parse(localSaved);
                 fetchRealtimeData();
@@ -196,10 +194,6 @@
             document.getElementById(screenId).classList.add('active');
         }
 
-        function highlightTodayInCalendar() {
-            document.getElementById(`day-${todayDayIndex}`).classList.add('today');
-        }
-
         function setWeeklyLimit(hours) {
             appConfig.weeklyLimit = hours;
             document.getElementById('opt-20').classList.toggle('selected', hours === 20);
@@ -207,18 +201,34 @@
         }
 
         function saveConfiguration() {
-            const rateInput = parseFloat(document.getElementById('input-rate').value);
-            const targetInput = parseFloat(document.getElementById('input-target').value);
+            const rate = parseFloat(document.getElementById('input-rate').value);
+            const target = parseFloat(document.getElementById('input-target').value);
 
-            if (isNaN(rateInput) || rateInput <= 0 || isNaN(targetInput) || targetInput <= 0) {
-                alert("Please verification settings input rules.");
+            if (isNaN(rate) || rate <= 0 || isNaN(target) || target <= 0) {
+                alert("Please provide proper configuration variables.");
                 return;
             }
 
-            appConfig.hourlyRate = rateInput;
-            appConfig.monthlyTarget = targetInput;
-            localStorage.setItem('earntrack_local_setup', JSON.stringify(appConfig));
+            appConfig.hourlyRate = rate;
+            appConfig.monthlyTarget = target;
+            localStorage.setItem('earntrack_v3_setup', JSON.stringify(appConfig));
             fetchRealtimeData();
+        }
+
+        function toggleHolidayMode(isHoliday) {
+            document.getElementById('time-picker-inputs-wrapper').style.opacity = isHoliday ? "0.2" : "1.0";
+            document.querySelectorAll('.time-box-field').forEach(input => input.disabled = isHoliday);
+        }
+
+        function computeDiffHours(startTimeStr, endTimeStr) {
+            if(!startTimeStr || !endTimeStr) return 0;
+            const [sHrs, sMins] = startTimeStr.split(':').map(Number);
+            const [eHrs, eMins] = endTimeStr.split(':').map(Number);
+            
+            let diffMins = (eHrs * 60 + eMins) - (sHrs * 60 + sMins);
+            if (diffMins < 0) diffMins += 24 * 60; // Crosses midnight calculation handling
+            
+            return diffMins / 60;
         }
 
         async function fetchRealtimeData() {
@@ -227,52 +237,44 @@
                 const data = await response.json();
 
                 document.getElementById('dash-total-earned').innerText = '£' + data.monthlyCumulativeEarnings.toFixed(2);
-                document.getElementById('dash-weekly-hours').innerText = `${data.weeklyTotalHours.toFixed(1)} / ${appConfig.weeklyLimit}h`;
+                document.getElementById('dash-weekly-hours').innerText = `${data.weeklyTotalHours.toFixed(2)}h / ${appConfig.weeklyLimit}h`;
                 
                 const progressPercent = Math.min(100, (data.monthlyCumulativeEarnings / appConfig.monthlyTarget) * 100);
                 document.getElementById('dash-progress-fill').style.width = progressPercent + '%';
                 document.getElementById('dash-progress-text').innerText = `£${data.monthlyCumulativeEarnings.toFixed(0)} / £${appConfig.monthlyTarget}`;
 
-                // Clear layout tracking classes and parse verified history maps
-                for(let i=0; i<7; i++) document.getElementById(`day-${i}`).classList.remove('worked');
-                
-                let todayIsAlreadyLogged = false;
                 const todayString = new Date().toISOString().split('T')[0];
-
-                data.weekShifts.forEach(shift => {
-                    const dayIdx = new Date(shift.date).getDay();
-                    document.getElementById(`day-${dayIdx}`).classList.add('worked');
-                    if(shift.date === todayString) {
-                        todayIsAlreadyLogged = true;
-                    }
-                });
+                const todayIsAlreadyLogged = data.weekShifts.some(shift => shift.date === todayString);
 
                 if (todayIsAlreadyLogged) {
-                    lockLoggingInterface();
+                    document.getElementById('holiday-checkbox').disabled = true;
+                    document.getElementById('submit-btn').disabled = true;
+                    document.getElementById('lock-msg').style.display = 'block';
                 }
 
                 showScreen('screen-dashboard');
             } catch (err) {
-                console.error("API Error connecting to database context container.", err);
-                showScreen('screen-dashboard'); // Fallback loop bypass
+                showScreen('screen-dashboard');
             }
         }
 
-        function lockLoggingInterface() {
-            document.getElementById('hour-slider').disabled = true;
-            document.getElementById('submit-btn').disabled = true;
-            document.getElementById('lock-msg').style.display = 'block';
-            document.getElementById('slider-instruction').innerText = "Daily Logging Concluded";
-        }
+        async function calculateAndPostShifts() {
+            let dayHours = 0, eveHours = 0, nightHours = 0;
+            const isHoliday = document.getElementById('holiday-checkbox').checked;
 
-        async function logShiftRealtime() {
-            const hours = parseFloat(document.getElementById('hour-slider').value);
-            if (isNaN(hours) || hours < 0) return; // FIXED: Accepts 0 hours cleanly as Holiday input now
+            if (!isHoliday) {
+                dayHours = computeDiffHours(document.getElementById('day-start').value, document.getElementById('day-end').value);
+                eveHours = computeDiffHours(document.getElementById('eve-start').value, document.getElementById('eve-end').value);
+                nightHours = computeDiffHours(document.getElementById('night-start').value, document.getElementById('night-end').value);
+            }
 
             const payload = {
                 telegram_id: telegramId,
-                hours: hours,
-                date: new Date().toISOString().split('T')[0]
+                date: new Date().toISOString().split('T')[0],
+                day_hours: dayHours,
+                evening_hours: eveHours,
+                night_hours: nightHours,
+                is_holiday: isHoliday
             };
 
             try {
@@ -284,19 +286,15 @@
 
                 if (response.ok) {
                     if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-                    lockLoggingInterface();
                     fetchRealtimeData();
-                } else {
-                    const errData = await response.json();
-                    tg.showAlert(errData.detail || "Transaction blocked by API constraint guards.");
                 }
             } catch (err) {
-                tg.showAlert("API Connection Error execution fault.");
+                tg.showAlert("API operational synchronization failure.");
             }
         }
 
         function resetApp() {
-            if(confirm("Wipe setup profiles configuration state logs? This breaks database tracking connections link.")) {
+            if(confirm("Wipe configuration metadata state?")) {
                 localStorage.clear();
                 location.reload();
             }
