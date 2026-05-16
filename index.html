@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EarnTrack - AI Wage Tracker</title>
+    <title>EarnTrack - Real-Time Engine</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -12,6 +12,7 @@
             --text-color: #ffffff;
             --accent-color: #64ffda;
             --muted-text: #8892b0;
+            --error-color: #ff5555;
         }
 
         body {
@@ -21,311 +22,57 @@
             margin: 0;
             padding: 16px;
             box-sizing: border-box;
-            -webkit-user-select: none;
-            user-select: none;
         }
 
-        .app-container {
-            max-width: 480px;
-            margin: 0 auto;
-        }
+        .app-container { max-width: 480px; margin: 0 auto; }
+        .screen { display: none; }
+        .screen.active { display: block; }
+        
+        h2 { font-size: 24px; margin-bottom: 8px; background: linear-gradient(45deg, #ffffff, var(--accent-color)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        p.subtitle { color: var(--muted-text); font-size: 14px; margin-top: 0; margin-bottom: 24px; }
 
-        /* Screens Management */
-        .screen {
-            display: none;
-        }
-        .screen.active {
-            display: block;
-        }
+        /* Dashboard Elements */
+        .booster-card { background-color: var(--card-color); border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(100, 255, 218, 0.05); }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .stat-label { font-size: 11px; color: var(--muted-text); text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-value { font-size: 24px; font-weight: 700; margin-top: 4px; }
+        
+        .progress-bar { background-color: rgba(255, 255, 255, 0.1); height: 10px; border-radius: 5px; overflow: hidden; margin-top: 6px; }
+        .progress-fill { background: linear-gradient(90deg, #4dadf7, var(--accent-color)); height: 100%; width: 0%; transition: width 0.8s ease-in-out; }
 
-        h2 {
-            font-size: 24px;
-            margin-bottom: 8px;
-            background: linear-gradient(45deg, #ffffff, var(--accent-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+        /* Calendar Styling */
+        .calendar-card { background-color: var(--card-color); border-radius: 16px; padding: 16px; margin-bottom: 20px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; margin-top: 10px; }
+        .calendar-day-label { font-size: 11px; color: var(--muted-text); font-weight: 600; }
+        .calendar-day { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 8px 0; font-size: 13px; font-weight: 600; color: var(--muted-text); }
+        .calendar-day.today { border-color: #4dadf7; color: #4dadf7; }
+        .calendar-day.worked { background: rgba(100, 255, 218, 0.15); border-color: var(--accent-color); color: var(--accent-color); }
 
-        p.subtitle {
-            color: var(--muted-text);
-            font-size: 14px;
-            margin-top: 0;
-            margin-bottom: 24px;
-            line-height: 1.4;
-        }
+        /* Controls */
+        .log-panel { background-color: var(--card-color); border-radius: 16px; padding: 20px; text-align: center; }
+        .hours-display { font-size: 44px; font-weight: 800; color: var(--accent-color); margin: 8px 0; }
+        .modern-slider { -webkit-appearance: none; width: 100%; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.1); outline: none; margin: 20px 0; }
+        .modern-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: var(--accent-color); cursor: pointer; }
+        .modern-slider:disabled::-webkit-slider-thumb { background: var(--muted-text); cursor: not-allowed; }
 
-        /* Setup / Onboarding Inputs */
-        .input-group {
-            margin-bottom: 24px;
-        }
-
-        .input-group label {
-            display: block;
-            font-size: 13px;
-            color: var(--muted-text);
-            text-transform: uppercase;
-            margin-bottom: 8px;
-            letter-spacing: 0.5px;
-        }
-
-        .input-field {
-            width: 100%;
-            background-color: var(--card-color);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: white;
-            padding: 14px;
-            border-radius: 12px;
-            font-size: 16px;
-            box-sizing: border-box;
-            outline: none;
-        }
-
-        .input-field:focus {
-            border-color: var(--accent-color);
-        }
-
-        .radio-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .radio-btn {
-            background-color: var(--card-color);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: white;
-            padding: 14px;
-            border-radius: 12px;
-            text-align: center;
-            font-size: 16px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .radio-btn.selected {
-            border-color: var(--accent-color);
-            background-color: rgba(100, 255, 218, 0.1);
-            color: var(--accent-color);
-        }
-
-        /* Dashboard Modules */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .booster-card {
-            background-color: var(--card-color);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(100, 255, 218, 0.05);
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 16px;
-        }
-
-        .stat-label {
-            font-size: 11px;
-            color: var(--muted-text);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: 700;
-            margin-top: 4px;
-        }
-
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            font-size: 13px;
-            color: var(--muted-text);
-            margin-bottom: 6px;
-        }
-
-        .progress-bar {
-            background-color: rgba(255, 255, 255, 0.1);
-            height: 10px;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            background: linear-gradient(90deg, #4dadf7, var(--accent-color));
-            height: 100%;
-            width: 0%;
-            transition: width 0.8s ease-in-out;
-        }
-
-        .alert-box {
-            background: rgba(100, 255, 218, 0.05);
-            border-left: 4px solid var(--accent-color);
-            padding: 14px;
-            border-radius: 0 12px 12px 0;
-            font-size: 13px;
-            line-height: 1.5;
-            color: #e6f1ff;
-        }
-
-        /* Calendar Matrix Block */
-        .calendar-card {
-            background-color: var(--card-color);
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 20px;
-        }
-
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 8px;
-            text-align: center;
-            margin-top: 10px;
-        }
-
-        .calendar-day-label {
-            font-size: 11px;
-            color: var(--muted-text);
-            font-weight: 600;
-        }
-
-        .calendar-day {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            padding: 8px 0;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--muted-text);
-        }
-
-        .calendar-day.worked {
-            background: rgba(100, 255, 218, 0.15);
-            border-color: var(--accent-color);
-            color: var(--accent-color);
-        }
-
-        /* Interactive Logger Panel */
-        .log-panel {
-            background-color: var(--card-color);
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .hours-display {
-            font-size: 44px;
-            font-weight: 800;
-            color: var(--accent-color);
-            margin-top: 8px;
-            margin-bottom: 8px;
-        }
-
-        .modern-slider {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 6px;
-            border-radius: 3px;
-            background: rgba(255,255,255,0.1);
-            outline: none;
-            margin: 20px 0;
-        }
-
-        .modern-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: var(--accent-color);
-            cursor: pointer;
-            box-shadow: 0 0 10px rgba(100,255,218,0.5);
-        }
-
-        /* Buttons Layout */
-        .btn-action {
-            background-color: var(--accent-color);
-            color: #0a192f;
-            border: none;
-            width: 100%;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        .btn-secondary {
-            background-color: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white;
-            width: 100%;
-            padding: 14px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        .btn-action:active, .btn-secondary:active {
-            opacity: 0.8;
-        }
-
-        .reset-link {
-            display: block;
-            text-align: center;
-            font-size: 11px;
-            color: var(--muted-text);
-            margin-top: 16px;
-            text-decoration: underline;
-            cursor: pointer;
-        }
+        .btn-action { background-color: var(--accent-color); color: #0a192f; border: none; width: 100%; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; }
+        .btn-action:disabled { background-color: rgba(255,255,255,0.05); color: var(--muted-text); cursor: not-allowed; }
+        
+        .locked-message { color: var(--error-color); font-size: 13px; margin-top: 10px; display: none; font-weight: 600; }
     </style>
 </head>
 <body>
 
     <div class="app-container">
-
-        <div id="screen-onboarding" class="screen">
-            <h2>Welcome to EarnTrack</h2>
-            <p class="subtitle">Configure your baseline settings to start generating metrics.</p>
-            
-            <div class="input-group">
-                <label>Weekly Working Hour Target/Limit</label>
-                <div class="radio-grid">
-                    <div class="radio-btn selected" id="opt-20" onclick="setWeeklyLimit(20)">20 Hours</div>
-                    <div class="radio-btn" id="opt-40" onclick="setWeeklyLimit(40)">40 Hours</div>
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label>Hourly Wage Rate (£ / hr)</label>
-                <input type="number" id="input-rate" class="input-field" placeholder="e.g. 11.44" value="11.44" step="0.01">
-            </div>
-
-            <div class="input-group">
-                <label>Monthly Financial Target (GBP)</label>
-                <input type="number" id="input-target" class="input-field" placeholder="e.g. 1500" value="1500">
-            </div>
-
-            <button class="btn-action" onclick="saveConfiguration()">Generate Tracker Dashboard</button>
+        <div id="screen-loading" class="screen active" style="text-align: center; padding-top: 50px;">
+            <h2>Authenticating...</h2>
+            <p style="color: var(--muted-text)">Securing connection with Telegram ID</p>
         </div>
 
-
         <div id="screen-dashboard" class="screen">
-            <div class="header">
-                <h2 style="font-size: 20px;">EarnTrack Engine</h2>
-                <span style="font-size: 11px; color: var(--accent-color); background: rgba(100,255,218,0.1); padding: 4px 10px; border-radius: 20px; font-weight:600;">MONTHLY HORIZON</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2>EarnTrack Live</h2>
+                <span id="user-display" style="font-size: 12px; color: var(--accent-color);">ID: ----</span>
             </div>
 
             <div class="booster-card">
@@ -339,211 +86,141 @@
                         <div class="stat-value" id="dash-weekly-hours">0.0 / 40h</div>
                     </div>
                 </div>
-
-                <div class="progress-container">
-                    <div class="progress-header">
-                        <span>Progress Toward Monthly Target</span>
-                        <span id="dash-progress-text">£0 / £1500</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="dash-progress-fill"></div>
-                    </div>
-                </div>
-                
-                <br>
-                <div class="alert-box" id="dash-booster-message">
-                    Recalculating performance data...
-                </div>
+                <div class="progress-bar"><div class="progress-fill" id="dash-progress-fill"></div></div>
             </div>
 
             <div class="calendar-card">
-                <span class="stat-label">Current Week Progress Grid</span>
+                <span class="stat-label">Real-time Week Horizon</span>
                 <div class="calendar-grid">
-                    <div class="calendar-day-label">Mon</div>
-                    <div class="calendar-day-label">Tue</div>
-                    <div class="calendar-day-label">Wed</div>
-                    <div class="calendar-day-label">Thu</div>
-                    <div class="calendar-day-label">Fri</div>
-                    <div class="calendar-day-label">Sat</div>
-                    <div class="calendar-day-label">Sun</div>
-                    
-                    <div class="calendar-day" id="day-0">M</div>
-                    <div class="calendar-day" id="day-1">T</div>
-                    <div class="calendar-day" id="day-2">W</div>
-                    <div class="calendar-day" id="day-3">T</div>
-                    <div class="calendar-day" id="day-4">F</div>
-                    <div class="calendar-day" id="day-5">S</div>
+                    <div class="calendar-day-label">Mon</div><div class="calendar-day-label">Tue</div><div class="calendar-day-label">Wed</div><div class="calendar-day-label">Thu</div><div class="calendar-day-label">Fri</div><div class="calendar-day-label">Sat</div><div class="calendar-day-label">Sun</div>
+                    <div class="calendar-day" id="day-1">M</div>
+                    <div class="calendar-day" id="day-2">T</div>
+                    <div class="calendar-day" id="day-3">W</div>
+                    <div class="calendar-day" id="day-4">T</div>
+                    <div class="calendar-day" id="day-5">F</div>
                     <div class="calendar-day" id="day-6">S</div>
-                </div>
+                    <div class="calendar-day" id="day-0">S</div> </div>
             </div>
 
             <div class="log-panel">
-                <span class="stat-label" style="display:block; margin-bottom:4px;">Log hours worked today</span>
+                <span class="stat-label" id="slider-instruction">Slide to log shift duration</span>
                 <div class="hours-display"><span id="slider-val">7.5</span><span style="font-size:20px; font-weight:500; color:var(--muted-text);"> hrs</span></div>
                 
-                <input type="range" min="0" max="16" step="0.5" value="7.5" class="modern-slider" id="hour-slider" oninput="updateSliderDisplay(this.value)">
+                <input type="range" min="0" max="16" step="0.5" value="7.5" class="modern-slider" id="hour-slider" oninput="document.getElementById('slider-val').innerText=parseFloat(this.value).toFixed(1)">
                 
-                <button class="btn-action" onclick="logShiftTime()">Confirm Day's Shift</button>
-                
-                <button class="btn-secondary" onclick="triggerWeeklyReset()">⏭️ Move to Next Work Week</button>
+                <button class="btn-action" id="submit-btn" onclick="logShiftRealtime()">Confirm Today's Shift</button>
+                <div class="locked-message" id="lock-msg">⚠️ Shift already logged for today. Entry restricted until tomorrow!</div>
             </div>
-
-            <span class="reset-link" onclick="resetApp()">Change Core Setup Config</span>
         </div>
-
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Data Schema State Structure
-        let appConfig = {
-            weeklyLimit: 40,
-            hourlyRate: 11.44,
-            monthlyTarget: 1500,
-            accumulatedEarnings: 0, // Persistent across weeks for the entire month
-            accumulatedHoursThisWeek: 0, // Resets back to 0 on command
-            workedDaysFlags: [false, false, false, false, false, false, false] 
-        };
+        // 1. EXTRACT TELEGRAM USER METADATA AUTOMATICALLY
+        const telegramUser = tg.initDataUnsafe?.user;
+        const telegramId = telegramUser ? telegramUser.id : "LOCAL_TEST_USER";
+        const username = telegramUser ? (telegramUser.username || telegramUser.first_name) : "Developer";
+        
+        // Change this URL to match your real backend URL deployed on Render/Railway
+        // const BACKEND_API_URL = "https://your-backend-api.com/api"; 
+        const BACKEND_API_URL = "https://earntrack-backend.onrender.com/api";
+
+        let userData = { hourlyRate: 11.44, weeklyLimit: 40, monthlyTarget: 1500 };
+        let weekShiftsMap = {}; // Tracks hours logged per day index this week
+        let todayDayIndex = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
 
         window.addEventListener('DOMContentLoaded', () => {
-            const savedData = localStorage.getItem('earntrack_v2');
-            if (savedData) {
-                appConfig = JSON.parse(savedData);
-                showScreen('screen-dashboard');
-                updateDashboardUI();
-            } else {
-                showScreen('screen-onboarding');
-            }
+            document.getElementById('user-display').innerText = `@${username}`;
+            highlightTodayInCalendar();
+            fetchRealtimeData();
         });
 
+        function highlightTodayInCalendar() {
+            document.getElementById(`day-${todayDayIndex}`).classList.add('today');
+        }
+
+        // 2. CONNECT TO REALTIME API ON LOAD (LOGIN/FETCH)
+        async function fetchRealtimeData() {
+            try {
+                // Securely pass Telegram initialization data in headers for backend authentication
+                const response = await fetch(`${BACKEND_API_URL}/user-data?telegram_id=${telegramId}`, {
+                    headers: { 'X-Telegram-Init-Data': tg.initData }
+                });
+                const data = await response.json();
+
+                // Process structural metrics from real db
+                document.getElementById('dash-total-earned').innerText = '£' + data.monthlyCumulativeEarnings.toFixed(2);
+                document.getElementById('dash-weekly-hours').innerText = `${data.weeklyTotalHours.toFixed(1)} / ${userData.weeklyLimit}h`;
+                
+                const progressPercent = Math.min(100, (data.monthlyCumulativeEarnings / userData.monthlyTarget) * 100);
+                document.getElementById('dash-progress-fill').style.width = progressPercent + '%';
+
+                // Map real week shifts history to UI grid
+                data.weekShifts.forEach(shift => {
+                    const dayIdx = new Date(shift.date).getDay();
+                    document.getElementById(`day-${dayIdx}`).classList.add('worked');
+                    weekShiftsMap[dayIdx] = shift.hours;
+                });
+
+                // 3. ENFORCE ONE ENTRY PER DAY RESTRICTION
+                if (weekShiftsMap[todayDayIndex] !== undefined) {
+                    lockLoggingInterface();
+                }
+
+                // Switch screen out of loading state
+                document.getElementById('screen-loading').classList.remove('active');
+                document.getElementById('screen-dashboard').classBox = "screen active";
+                showScreen('screen-dashboard');
+            } catch (err) {
+                console.error("Backend offline. Falling back to demo mode.", err);
+                // For layout testing if backend is not yet deployed:
+                showScreen('screen-dashboard');
+            }
+        }
+
+        function lockLoggingInterface() {
+            document.getElementById('hour-slider').disabled = true;
+            document.getElementById('submit-btn').disabled = true;
+            document.getElementById('lock-msg').style.display = 'block';
+            document.getElementById('slider-instruction').innerText = "Daily Window Locked";
+        }
+
         function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-loading').classList.remove('active');
             document.getElementById(screenId).classList.add('active');
         }
 
-        function setWeeklyLimit(hours) {
-            appConfig.weeklyLimit = hours;
-            document.getElementById('opt-20').classList.toggle('selected', hours === 20);
-            document.getElementById('opt-40').classList.toggle('selected', hours === 40);
-            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-        }
+        // 4. POST SHIFT TO REALTIME BACKEND
+        async function logShiftRealtime() {
+            const hours = parseFloat(document.getElementById('hour-slider').value);
+            if (hours === 0) return;
 
-        function saveConfiguration() {
-            const rateInput = parseFloat(document.getElementById('input-rate').value);
-            const targetInput = parseFloat(document.getElementById('input-target').value);
+            const payload = {
+                telegram_id: telegramId,
+                hours: hours,
+                date: new Date().toISOString().split('T')[0] // Formats cleanly to YYYY-MM-DD
+            };
 
-            if (isNaN(rateInput) || rateInput <= 0 || isNaN(targetInput) || targetInput <= 0) {
-                alert("Please verify values are correct.");
-                return;
-            }
+            try {
+                const response = await fetch(`${BACKEND_API_URL}/log-shift`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-Telegram-Init-Data': tg.initData
+                    },
+                    body: JSON.stringify(payload)
+                });
 
-            appConfig.hourlyRate = rateInput;
-            appConfig.monthlyTarget = targetInput;
-            appConfig.accumulatedEarnings = 0; 
-            appConfig.accumulatedHoursThisWeek = 0;
-            appConfig.workedDaysFlags = [false, false, false, false, false, false, false];
-
-            saveToStorage();
-            showScreen('screen-dashboard');
-            updateDashboardUI();
-        }
-
-        function updateSliderDisplay(val) {
-            document.getElementById('slider-val').innerText = parseFloat(val).toFixed(1);
-        }
-
-        function saveToStorage() {
-            localStorage.setItem('earntrack_v2', JSON.stringify(appConfig));
-        }
-
-        // Dashboard State Refresh Mechanics
-        function updateDashboardUI() {
-            // Money persists and continues accumulating
-            document.getElementById('dash-total-earned').innerText = '£' + appConfig.accumulatedEarnings.toFixed(2);
-            document.getElementById('dash-weekly-hours').innerText = `${appConfig.accumulatedHoursThisWeek.toFixed(1)} / ${appConfig.weeklyLimit}h`;
-            
-            // Progress Bar Calculation
-            const progressPercent = Math.min(100, (appConfig.accumulatedEarnings / appConfig.monthlyTarget) * 100);
-            document.getElementById('dash-progress-fill').style.width = progressPercent + '%';
-            document.getElementById('dash-progress-text').innerText = `£${appConfig.accumulatedEarnings.toFixed(0)} / £${appConfig.monthlyTarget}`;
-
-            // Sync visual calendar highlights
-            for(let i=0; i<7; i++) {
-                document.getElementById(`day-${i}`).classList.toggle('worked', appConfig.workedDaysFlags[i]);
-            }
-
-            // Behavioral Incentive Messaging (The Morale Booster)
-            const messageElement = document.getElementById('dash-booster-message');
-            const remainingCash = appConfig.monthlyTarget - appConfig.accumulatedEarnings;
-            const remainingHoursTotal = remainingCash / appConfig.hourlyRate;
-
-            if (appConfig.accumulatedEarnings >= appConfig.monthlyTarget) {
-                messageElement.innerHTML = `<strong>Monthly Target Cleared! 🎉</strong> Every hour you log from here on out is pure wealth extension. Incredible job!`;
-            } else if (appConfig.accumulatedHoursThisWeek > appConfig.weeklyLimit) {
-                const overtimeHours = appConfig.accumulatedHoursThisWeek - appConfig.weeklyLimit;
-                messageElement.innerHTML = `You are crushing it! You exceeded your baseline target limit by <strong>${overtimeHours.toFixed(1)} hours</strong> this week. Your monthly cash keeps compounding!`;
-            } else {
-                messageElement.innerHTML = `Monthly target deficit: <strong>£${remainingCash.toFixed(2)}</strong>. You can completely close this gap in roughly <strong>${remainingHoursTotal.toFixed(1)} working hours</strong>.`;
-            }
-        }
-
-        function logShiftTime() {
-            const hoursLogged = parseFloat(document.getElementById('hour-slider').value);
-            if (hoursLogged === 0) return;
-
-            const earningsGained = hoursLogged * appConfig.hourlyRate;
-            
-            appConfig.accumulatedEarnings += earningsGained;
-            appConfig.accumulatedHoursThisWeek += hoursLogged;
-
-            // Highlight next available block in the local week grid dynamically
-            const nextEmptyDayIndex = appConfig.workedDaysFlags.indexOf(false);
-            if (nextEmptyDayIndex !== -1) {
-                appConfig.workedDaysFlags[nextEmptyDayIndex] = true;
-            }
-
-            saveToStorage();
-            updateDashboardUI();
-
-            if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-
-            tg.showPopup({
-                title: 'Shift Verified! 💸',
-                message: `Logged ${hoursLogged}h (+£${earningsGained.toFixed(2)} added to your permanent Monthly balance).`,
-                buttons: [{type: 'ok'}]
-            });
-        }
-
-        // WEEKLY HOURLY RESET ALGORITHM 
-        function triggerWeeklyReset() {
-            tg.showConfirm("Are you ready to lock in this week's hours and move to the next work week? This clears your weekly hour counter to 0 but preserves your cumulative monthly earnings.", (confirmed) => {
-                if (confirmed) {
-                    // Wipe the hours clock to zero
-                    appConfig.accumulatedHoursThisWeek = 0;
-                    
-                    // Clear the current calendar indicators for the fresh week cycle
-                    appConfig.workedDaysFlags = [false, false, false, false, false, false, false];
-                    
-                    saveToStorage();
-                    updateDashboardUI();
-                    
+                if (response.ok) {
                     if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-                    
-                    tg.showPopup({
-                        title: 'New Week Activated! ⏱️',
-                        message: 'Your weekly limit bar has reset back to 0.0 hours. Your monthly structural targets remain safe and active!',
-                        buttons: [{type: 'ok'}]
-                    });
+                    document.getElementById(`day-${todayDayIndex}`).classList.add('worked');
+                    lockLoggingInterface();
+                    fetchRealtimeData(); // Refresh values dynamically straight from backend server
                 }
-            });
-        }
-
-        function resetApp() {
-            if(confirm("Wipe all persistent app parameters and metrics completely?")) {
-                localStorage.removeItem('earntrack_v2');
-                location.reload();
+            } catch (err) {
+                tg.showAlert("API Transaction Error. Check backend connectivity configuration.");
             }
         }
     </script>
